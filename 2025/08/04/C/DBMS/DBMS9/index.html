@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>【从零开始写DBMS】执行计划与查询优化器设计 | 曜花缘的技术笔记</title><meta name="author" content="曜花缘"><meta name="copyright" content="曜花缘"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="📘 从零构建数据库系统（五）：执行计划与查询优化器设计 在数据库系统中，查询优化器（Query Optimizer）是负责将用户的 SQL 查询转换为高效执行计划的核心组件。本篇将解析我在 DBMS 项目中如何设计和实现一个简单但结构清晰的 查询优化器（Planner） 模块。  🧠 1. 查询优化器的作用 优化器的目标是：在多种可选的查询方式中，选择一个代价最小、执行速度最快的方案。比如以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【从零开始写DBMS】执行计划与查询优化器设计">
+<meta property="og:url" content="https://yaohuayuan.github.io/2025/08/04/C/DBMS/DBMS9/index.html">
+<meta property="og:site_name" content="曜花缘的技术笔记">
+<meta property="og:description" content="📘 从零构建数据库系统（五）：执行计划与查询优化器设计 在数据库系统中，查询优化器（Query Optimizer）是负责将用户的 SQL 查询转换为高效执行计划的核心组件。本篇将解析我在 DBMS 项目中如何设计和实现一个简单但结构清晰的 查询优化器（Planner） 模块。  🧠 1. 查询优化器的作用 优化器的目标是：在多种可选的查询方式中，选择一个代价最小、执行速度最快的方案。比如以">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yaohuayuan.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-08-04T04:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-04T07:45:26.000Z">
+<meta property="article:author" content="曜花缘">
+<meta property="article:tag" content="DBMS设计">
+<meta property="article:tag" content="缓冲区">
+<meta property="article:tag" content="Page管理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yaohuayuan.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "【从零开始写DBMS】执行计划与查询优化器设计",
+  "url": "https://yaohuayuan.github.io/2025/08/04/C/DBMS/DBMS9/",
+  "image": "https://yaohuayuan.github.io/img/butterfly-icon.png",
+  "datePublished": "2025-08-04T04:00:00.000Z",
+  "dateModified": "2025-08-04T07:45:26.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "曜花缘",
+      "url": "https://yaohuayuan.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yaohuayuan.github.io/2025/08/04/C/DBMS/DBMS9/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '【从零开始写DBMS】执行计划与查询优化器设计',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"><link href="https://cdn.bootcss.com/KaTeX/0.11.1/katex.min.css" rel="stylesheet" /></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 力扣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E5%8A%9B%E6%89%A3/%E6%AF%8F%E6%97%A5%E4%B8%80%E9%A2%98/"><i class="fa-fw fas fa-calendar-day"></i><span> 每日一题</span></a></li><li><a class="site-page child" href="/categories/%E5%8A%9B%E6%89%A3/%E5%91%A8%E8%B5%9B/"><i class="fa-fw fas fa-trophy"></i><span> 周赛</span></a></li><li><a class="site-page child" href="/categories/%E5%8A%9B%E6%89%A3/%E5%88%B7%E9%A2%98%E8%AE%B0%E5%BD%95/"><i class="fa-fw fas fa-history"></i><span> 刷题记录</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><span> 计算机基础</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"><i class="fa-fw fas fa-diagram-project"></i><span> 数据结构</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%EF%BC%88%E5%AE%9E%E7%8E%B0%EF%BC%89/"><i class="fa-fw fas fa-microchip"></i><span> 操作系统</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90/"><i class="fa-fw fas fa-cogs"></i><span> 计算机组成</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机网络</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/DBMS%E8%AE%BE%E8%AE%A1/"><i class="fa-fw fas fa-database"></i><span> DBMS设计</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><span> 数学建模</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/A%E9%A2%98/"><i class="fa-fw fas fa-a"></i><span> A题</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/B%E9%A2%98/"><i class="fa-fw fas fa-b"></i><span> B题</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/C%E9%A2%98/"><i class="fa-fw fas fa-c"></i><span> C题</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 我的博客</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">曜花缘的技术笔记</span></a><a class="nav-page-title" href="/"><span class="site-name">【从零开始写DBMS】执行计划与查询优化器设计</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 力扣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E5%8A%9B%E6%89%A3/%E6%AF%8F%E6%97%A5%E4%B8%80%E9%A2%98/"><i class="fa-fw fas fa-calendar-day"></i><span> 每日一题</span></a></li><li><a class="site-page child" href="/categories/%E5%8A%9B%E6%89%A3/%E5%91%A8%E8%B5%9B/"><i class="fa-fw fas fa-trophy"></i><span> 周赛</span></a></li><li><a class="site-page child" href="/categories/%E5%8A%9B%E6%89%A3/%E5%88%B7%E9%A2%98%E8%AE%B0%E5%BD%95/"><i class="fa-fw fas fa-history"></i><span> 刷题记录</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><span> 计算机基础</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"><i class="fa-fw fas fa-diagram-project"></i><span> 数据结构</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%EF%BC%88%E5%AE%9E%E7%8E%B0%EF%BC%89/"><i class="fa-fw fas fa-microchip"></i><span> 操作系统</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90/"><i class="fa-fw fas fa-cogs"></i><span> 计算机组成</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><i class="fa-fw fas fa-network-wired"></i><span> 计算机网络</span></a></li><li><a class="site-page child" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/DBMS%E8%AE%BE%E8%AE%A1/"><i class="fa-fw fas fa-database"></i><span> DBMS设计</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><span> 数学建模</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/A%E9%A2%98/"><i class="fa-fw fas fa-a"></i><span> A题</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/B%E9%A2%98/"><i class="fa-fw fas fa-b"></i><span> B题</span></a></li><li><a class="site-page child" href="/categories/%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1/C%E9%A2%98/"><i class="fa-fw fas fa-c"></i><span> C题</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 我的博客</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">【从零开始写DBMS】执行计划与查询优化器设计</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-04T04:00:00.000Z" title="发表于 2025-08-04 12:00:00">2025-08-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-04T07:45:26.000Z" title="更新于 2025-08-04 15:45:26">2025-08-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/DBMS%E8%AE%BE%E8%AE%A1/">DBMS设计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><hr>
+<h1>📘 从零构建数据库系统（五）：执行计划与查询优化器设计</h1>
+<p>在数据库系统中，查询优化器（Query Optimizer）是负责将用户的 SQL 查询转换为高效执行计划的核心组件。本篇将解析我在 DBMS 项目中如何设计和实现一个简单但结构清晰的 <strong>查询优化器（Planner）</strong> 模块。</p>
+<hr>
+<h2 id="🧠-1-查询优化器的作用">🧠 1. 查询优化器的作用</h2>
+<p>优化器的目标是：在多种可选的查询方式中，选择一个<strong>代价最小</strong>、执行速度最快的方案。比如以下 SQL：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> name <span class="keyword">FROM</span> student <span class="keyword">WHERE</span> score <span class="operator">&gt;</span> <span class="number">90</span>;</span><br></pre></td></tr></table></figure>
+<p>可能有多种执行策略：</p>
+<ul>
+<li>顺序扫描（TableScan）</li>
+<li>索引扫描（IndexSelect）</li>
+<li>投影优化（Project）</li>
+<li>谓词下推（Select）</li>
+</ul>
+<p>优化器负责对这些策略进行组合和封装。</p>
+<hr>
+<h2 id="🧱-2-plan-接口设计">🧱 2. Plan 接口设计</h2>
+<p>在 <code>Plan.h</code> 中定义了通用的 <code>Plan</code> 接口，其核心是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Plan</span> &#123;</span></span><br><span class="line">    <span class="type">void</span> *plan;                      <span class="comment">// 指向具体子类型结构体</span></span><br><span class="line">    <span class="type">int</span> (*open)(<span class="type">void</span> *plan);        <span class="comment">// 打开迭代器</span></span><br><span class="line">    <span class="type">int</span> (*blocks_accessed)(<span class="type">void</span> *plan);</span><br><span class="line">    <span class="type">int</span> (*records_output)(<span class="type">void</span> *plan);</span><br><span class="line">    <span class="type">int</span> (*distinct_values)(<span class="type">void</span> *plan, <span class="type">const</span> <span class="type">char</span> *fieldname);</span><br><span class="line">    Schema (*get_schema)(<span class="type">void</span> *plan);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这一设计方式通过函数指针模拟 C++ 虚函数，实现了不同 Plan 类型的多态行为。</p>
+<hr>
+<h2 id="🧩-3-各类-plan-实现模块">🧩 3. 各类 Plan 实现模块</h2>
+<h3 id="3-1-tableplan-全表扫描">3.1 TablePlan（全表扫描）</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Plan plan;</span><br><span class="line">    TableInfo *tblinfo;</span><br><span class="line">    Transaction *tx;</span><br><span class="line">&#125; TablePlan;</span><br></pre></td></tr></table></figure>
+<p>它负责扫描整个表，生成迭代器。最基础的 Plan 类型。</p>
+<h3 id="3-2-selectplan-条件过滤">3.2 SelectPlan（条件过滤）</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Plan plan;</span><br><span class="line">    Plan *p;               <span class="comment">// 原始子计划</span></span><br><span class="line">    Predicate *pred;       <span class="comment">// 条件</span></span><br><span class="line">&#125; SelectPlan;</span><br></pre></td></tr></table></figure>
+<p>它在现有 Plan 上增加过滤功能，相当于“谓词下推”。</p>
+<h3 id="3-3-projectplan-字段投影">3.3 ProjectPlan（字段投影）</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Plan plan;</span><br><span class="line">    Plan *p;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> **fieldlist;</span><br><span class="line">    <span class="type">int</span> field_count;</span><br><span class="line">&#125; ProjectPlan;</span><br></pre></td></tr></table></figure>
+<p>它删除无关字段，返回指定字段列表，属于 IO 优化。</p>
+<h3 id="3-4-productplan-笛卡尔积">3.4 ProductPlan（笛卡尔积）</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Plan plan;</span><br><span class="line">    Plan *p1;</span><br><span class="line">    Plan *p2;</span><br><span class="line">&#125; ProductPlan;</span><br></pre></td></tr></table></figure>
+<p>实现连接两个表时的基本方式（未使用索引连接或哈希连接）。</p>
+<hr>
+<h2 id="🔁-4-执行计划的动态组合">🔁 4. 执行计划的动态组合</h2>
+<p>在 <code>Planner.h/.c</code> 中，定义了构建执行计划的核心逻辑：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Plan *<span class="title function_">BasicQueryPlannerCreatePlan</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *table, <span class="type">const</span> <span class="type">char</span> **fields, <span class="type">int</span> numFields,</span></span><br><span class="line"><span class="params">                                  Predicate *pred, Transaction *tx)</span>;</span><br></pre></td></tr></table></figure>
+<p>内部过程如下：</p>
+<ol>
+<li>创建 TablePlan</li>
+<li>将谓词下推为 SelectPlan</li>
+<li>应用字段投影变成 ProjectPlan</li>
+</ol>
+<p>这样，SELECT-FROM-WHERE 查询就被组合成如下结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ProjectPlan</span><br><span class="line">   └── SelectPlan</span><br><span class="line">         └── TablePlan</span><br></pre></td></tr></table></figure>
+<p>这种 <strong>树状结构</strong> 可以被后续执行器（Scan）遍历执行。</p>
+<hr>
+<h2 id="✨-5-实现亮点与拓展性">✨ 5. 实现亮点与拓展性</h2>
+<ul>
+<li>
+<p>使用函数指针封装子类行为，C 语言中实现“多态”</p>
+</li>
+<li>
+<p>每个 Plan 实现了估算代价（记录数、IO 代价）的方法，为未来成本模型提供基础</p>
+</li>
+<li>
+<p>可轻松扩展支持：</p>
+<ul>
+<li>索引选择（IndexSelectPlan）</li>
+<li>聚合（GroupByPlan）</li>
+<li>联接优化（JoinPlan）</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="📂-源码地址">📂 源码地址</h2>
+<p>GitHub 项目地址（示例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/yaohuayuan/DBMS_C</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="🏁-小结">🏁 小结</h2>
+<p>本模块为数据库执行引擎提供了结构化输入：<strong>执行计划树（Plan Tree）</strong>。虽然当前优化器仍然是“规则驱动”的，但已经具备成本估算和组合优化的基本能力，为未来支持 <strong>基于代价的优化器（CBO）</strong> 奠定了良好基础。</p>
+<hr>
+<p>需要我现在继续写 <strong>执行器（Scan）部分</strong> 吗？还是准备切换到 <strong>Buffer 管理器 / 表结构定义 / 索引模块</strong>？</p>
+<p>只需要告诉我：“我要写 BufferManager，下面是代码” 即可。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yaohuayuan.github.io">曜花缘</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yaohuayuan.github.io/2025/08/04/C/DBMS/DBMS9/">https://yaohuayuan.github.io/2025/08/04/C/DBMS/DBMS9/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yaohuayuan.github.io" target="_blank">曜花缘的技术笔记</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/DBMS%E8%AE%BE%E8%AE%A1/">DBMS设计</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%86%B2%E5%8C%BA/">缓冲区</a><a class="post-meta__tags" href="/tags/Page%E7%AE%A1%E7%90%86/">Page管理</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/08/04/C/DBMS/DBMS8/" title="【从零开始写DBMS】SQL解析与元数据管理：核心模块解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">【从零开始写DBMS】SQL解析与元数据管理：核心模块解析</div></div><div class="info-2"><div class="info-item-1">【从零开始写DBMS】SQL解析与元数据管理：核心模块解析 1. 模块概览 SQL解析和元数据管理是DBMS的核心功能。SQL解析器负责将SQL语句转换为内部执行计划，而元数据管理器则管理数据库的元数据，包括表结构、索引和统计信息。 2. SQL解析器 SQL解析器由词法分析器和语法分析器组成，负责将SQL语句分解为内部可执行的结构。 2.1 词法分析器（Lexer） 词法分析器将SQL语句分解为标记（tokens），如关键字、标识符、常量和分隔符。 1234567891011121314Lexer* LexerInit(char *s) &#123;    Lexer *lexer = malloc(sizeof(Lexer));    lexer-&gt;tokenizer = StreamTokenizerInit(s);    StreamTokenizerLowerCaseMode(lexer-&gt;tokenizer);    StreamTokenizerOrdinaryChar(lexer-&gt;tokenizer, &#x27;.&#x27;);   ...</div></div></div></a><a class="pagination-related" href="/2025/08/04/C/DataStructure/RedBlackTree/" title="不再畏惧红黑树：从原理到代码实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">不再畏惧红黑树：从原理到代码实现</div></div><div class="info-2"><div class="info-item-1">引入 在学习树的时候,我们学过BST(二叉搜索树),其的优点是O(h)的查找、插入、删除，但是如果在极端情况下的情况下,h会达到O(n),那么BST就无法使用了。于是我们引入了AVL(平衡二叉搜索树)。也就是约束树的高度来确保树的查找、插入、删除的复杂度都是O(logn)。但是在删除时插入和删除时，旋转操作较多，调整代价高。尤其是在频繁修改的场景下，AVL树的维护成本较大。 以下是一个对比的表格     特性 普通二叉搜索树（BST） AVL树 红黑树（RBT）     树的平衡性 无保证，可能退化成链表 严格平衡（任意节点子树高度差 ≤ 1） 弱平衡（约为黑色节点平衡，允许较大高度差）   查找性能 平均O(log n)，最坏O(n) 最优O(log n) O(log...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/08/04/C/DBMS/DBMS3/" title="【从零开始写DBMS】缓冲区管理器：Pin&#x2F;UnPin 与 LRU 淘汰"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-04</div><div class="info-item-2">【从零开始写DBMS】缓冲区管理器：Pin&#x2F;UnPin 与 LRU 淘汰</div></div><div class="info-2"><div class="info-item-1">🚀 引言：为何需要 BufferManager？ 数据库频繁访问磁盘页面，如果每次都从磁盘读取，性能将极差。于是引入缓冲池（Buffer Pool），将热点页面缓存在内存中，并通过Pin/Unpin 与LRU策略高效管理有限的缓冲页。 本篇聚焦于：  Buffer：单个页的缓存封装； BufferManager：负责页面调度、替换与事务一致性； Pin/Unpin机制、LRU选择算法； 事务日志协调（lsn）。   🧱 Buffer：缓冲区的基本单元 ✅ 功能目标  封装一个Page； 追踪事务修改（txNum, lsn）； 支持 Pin/Unpin 引用计数； Flush 时写回磁盘并协调日志（LogManager）。  ✅ 数据结构定义 123456789101112131415161718192021222324252627typedef struct Buffer&#123;    FileManager *fileManager;    LogManager *logManager;    Page *page;    BlockID *blockId;   ...</div></div></div></a><a class="pagination-related" href="/2025/08/04/C/DBMS/DBMS4/" title="【从零开始写DBMS】事务管理与崩溃恢复机制全解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-04</div><div class="info-item-2">【从零开始写DBMS】事务管理与崩溃恢复机制全解析</div></div><div class="info-2"><div class="info-item-1">从零构建数据库系统（四）：事务管理与崩溃恢复机制全解析  本文深入讲解数据库事务子系统的设计与实现，包括日志管理、事务接口、并发控制与崩溃恢复，帮助你理解数据库如何保障 ACID 特性。   ✨ 一、事务系统的核心目标 在数据库中，事务系统需满足 ACID 四大特性：  A 原子性：事务要么全部执行，要么全部失败。 C 一致性：事务完成后数据库必须从一个一致状态转移到另一个一致状态。 I 隔离性：多个事务互不干扰，结果等价于串行执行。 D 持久性：一旦事务提交，结果就应永久保存。  为此，我们将整个事务系统拆分为三大模块：    模块 功能     Transaction 提供事务级 API（begin、commit、rollback）   RecoveryManager 实现日志记录与崩溃恢复   ConcurrencyManager 控制锁粒度与并发访问     🧱 二、Transaction 模块：事务接口的封装 1. 初始化与销毁 12Transaction *TransactionInit(FileManager *fm, LogManager *lm,...</div></div></div></a><a class="pagination-related" href="/2025/08/04/C/DBMS/DBMS5/" title="【从零开始写DBMS】查询模块：表达式、谓词与扫描器的协同"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-04</div><div class="info-item-2">【从零开始写DBMS】查询模块：表达式、谓词与扫描器的协同</div></div><div class="info-2"><div class="info-item-1"> 【从零开始写DBMS】查询模块：表达式、谓词与扫描器的协同 1. 引言 在数据库管理系统（DBMS）中，查询模块负责处理用户的查询请求，包括表达式的解析、条件的评估以及数据的扫描和过滤。本文将深入探讨DBMS中查询模块的核心组件：常量（Constant）、表达式（Expression）、谓词（Predicate）以及各种扫描器（Scan）的设计与实现。 2. 模块划分与职责 2.1 常量（Constant） 常量模块用于创建和管理两种基本数据类型的常量值：整数和字符串。它提供了初始化、类型转换、比较和内存释放等功能。 2.2 表达式（Expression） 表达式模块负责构建和评估数据库查询中的表达式。它支持两种类型的表达式：基于常量的表达式和基于字段名的表达式。 2.3 谓词（Predicate） 谓词模块用于构建和评估查询条件。它将多个条件项组合在一起，并提供条件评估、条件组合以及条件过滤等功能。 2.4...</div></div></div></a><a class="pagination-related" href="/2025/08/04/C/DBMS/DBMS6/" title="【从零开始写DBMS】查询模块：记录页与布局的实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-04</div><div class="info-item-2">【从零开始写DBMS】查询模块：记录页与布局的实现</div></div><div class="info-2"><div class="info-item-1"> 【从零开始写DBMS】查询模块：记录页与布局的实现 1. 引言 在数据库管理系统（DBMS）中，记录页（RecordPage）和布局（Layout）是查询模块中至关重要的组成部分。它们共同协作，实现了数据的存储、检索和更新功能。本文将深入探讨DBMS中记录页和布局的设计与实现。 2. 模块划分与职责 2.1 布局（Layout） 布局模块用于定义表的物理存储结构，包括字段的偏移量和记录的大小。它提供字段偏移量的计算、记录大小的计算等功能。 2.2 记录页（RecordPage） 记录页模块负责管理数据库中单个页的数据记录。它支持记录的插入、删除、更新和查询操作，以及记录的格式化和槽（slot）管理。 2.3 RID RID（Record IDentifier）模块用于唯一标识记录页中的记录位置，包括块编号和槽号。 2.4 表扫描器（TableScan） 表扫描器模块用于遍历表中的记录，支持记录的插入、删除、更新和查询操作，以及记录的定位和迭代。 3. 布局（Layout）设计与实现 3.1 数据结构 12345typedef struct Layout &#123;   ...</div></div></div></a><a class="pagination-related" href="/2025/08/04/C/DBMS/DBMS7/" title="【从零开始写DBMS】元数据管理器：索引、统计与表结构的协同"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-04</div><div class="info-item-2">【从零开始写DBMS】元数据管理器：索引、统计与表结构的协同</div></div><div class="info-2"><div class="info-item-1"> 【从零开始写DBMS】元数据管理器：索引、统计与表结构的协同 1. 引言 在数据库管理系统（DBMS）中，元数据管理器（MetadataManager）负责管理数据库的元数据，包括表结构、索引信息、统计信息等。本文将深入探讨DBMS中元数据管理器的设计与实现，以及它如何与其他组件协同工作。 2. 模块划分与职责 2.1 索引信息（IndexInfo） 索引信息模块用于存储和管理索引的详细信息，包括索引名称、字段名称、表模式、事务、统计信息和布局。 2.2 索引管理器（IndexManager） 索引管理器模块负责创建和管理索引，包括索引的创建、获取索引信息和释放资源。 2.3 元数据管理器（MetadataManager） 元数据管理器模块整合了表管理器、视图管理器、统计管理器和索引管理器，提供统一的接口来管理数据库的元数据。 2.4 统计信息（StatInfo） 统计信息模块用于存储表的统计信息，如块数量和记录数量，并提供相关的方法来获取这些统计信息。 2.5 统计管理器（StatManager） 统计管理器模块负责初始化、获取和刷新统计信息，并计算表的统计信息。 2.6...</div></div></div></a><a class="pagination-related" href="/2025/08/04/C/DBMS/DBMS8/" title="【从零开始写DBMS】SQL解析与元数据管理：核心模块解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-04</div><div class="info-item-2">【从零开始写DBMS】SQL解析与元数据管理：核心模块解析</div></div><div class="info-2"><div class="info-item-1">【从零开始写DBMS】SQL解析与元数据管理：核心模块解析 1. 模块概览 SQL解析和元数据管理是DBMS的核心功能。SQL解析器负责将SQL语句转换为内部执行计划，而元数据管理器则管理数据库的元数据，包括表结构、索引和统计信息。 2. SQL解析器 SQL解析器由词法分析器和语法分析器组成，负责将SQL语句分解为内部可执行的结构。 2.1 词法分析器（Lexer） 词法分析器将SQL语句分解为标记（tokens），如关键字、标识符、常量和分隔符。 1234567891011121314Lexer* LexerInit(char *s) &#123;    Lexer *lexer = malloc(sizeof(Lexer));    lexer-&gt;tokenizer = StreamTokenizerInit(s);    StreamTokenizerLowerCaseMode(lexer-&gt;tokenizer);    StreamTokenizerOrdinaryChar(lexer-&gt;tokenizer, &#x27;.&#x27;);   ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">曜花缘</div><div class="author-info-description">分享编程、算法与日常点滴的个人博客</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yaohuayuan"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yaohuayuan" target="_blank" title="GitHub"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">📘 从零构建数据库系统（五）：执行计划与查询优化器设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-1-%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%99%A8%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text">🧠 1. 查询优化器的作用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-2-plan-%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.2.</span> <span class="toc-text">🧱 2. Plan 接口设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-3-%E5%90%84%E7%B1%BB-plan-%E5%AE%9E%E7%8E%B0%E6%A8%A1%E5%9D%97"><span class="toc-number">1.3.</span> <span class="toc-text">🧩 3. 各类 Plan 实现模块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-tableplan-%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 TablePlan（全表扫描）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-selectplan-%E6%9D%A1%E4%BB%B6%E8%BF%87%E6%BB%A4"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 SelectPlan（条件过滤）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-projectplan-%E5%AD%97%E6%AE%B5%E6%8A%95%E5%BD%B1"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 ProjectPlan（字段投影）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-productplan-%E7%AC%9B%E5%8D%A1%E5%B0%94%E7%A7%AF"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 ProductPlan（笛卡尔积）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-4-%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E7%9A%84%E5%8A%A8%E6%80%81%E7%BB%84%E5%90%88"><span class="toc-number">1.4.</span> <span class="toc-text">🔁 4. 执行计划的动态组合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%A8-5-%E5%AE%9E%E7%8E%B0%E4%BA%AE%E7%82%B9%E4%B8%8E%E6%8B%93%E5%B1%95%E6%80%A7"><span class="toc-number">1.5.</span> <span class="toc-text">✨ 5. 实现亮点与拓展性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%82-%E6%BA%90%E7%A0%81%E5%9C%B0%E5%9D%80"><span class="toc-number">1.6.</span> <span class="toc-text">📂 源码地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8F%81-%E5%B0%8F%E7%BB%93"><span class="toc-number">1.7.</span> <span class="toc-text">🏁 小结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/04/C/DataStructure/RedBlackTree/" title="不再畏惧红黑树：从原理到代码实现">不再畏惧红黑树：从原理到代码实现</a><time datetime="2025-08-04T07:25:59.000Z" title="发表于 2025-08-04 15:25:59">2025-08-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/04/C/DBMS/DBMS3/" title="【从零开始写DBMS】缓冲区管理器：Pin/UnPin 与 LRU 淘汰">【从零开始写DBMS】缓冲区管理器：Pin/UnPin 与 LRU 淘汰</a><time datetime="2025-08-04T04:00:00.000Z" title="发表于 2025-08-04 12:00:00">2025-08-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/04/C/DBMS/DBMS4/" title="【从零开始写DBMS】事务管理与崩溃恢复机制全解析">【从零开始写DBMS】事务管理与崩溃恢复机制全解析</a><time datetime="2025-08-04T04:00:00.000Z" title="发表于 2025-08-04 12:00:00">2025-08-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/04/C/DBMS/DBMS5/" title="【从零开始写DBMS】查询模块：表达式、谓词与扫描器的协同">【从零开始写DBMS】查询模块：表达式、谓词与扫描器的协同</a><time datetime="2025-08-04T04:00:00.000Z" title="发表于 2025-08-04 12:00:00">2025-08-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/04/C/DBMS/DBMS6/" title="【从零开始写DBMS】查询模块：记录页与布局的实现">【从零开始写DBMS】查询模块：记录页与布局的实现</a><time datetime="2025-08-04T04:00:00.000Z" title="发表于 2025-08-04 12:00:00">2025-08-04</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By 曜花缘</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
