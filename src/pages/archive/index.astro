@@ -1,0 +1,109 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/page.css';
+import '../../styles/archive.css';
+
+const archiveDateFormatter = new Intl.DateTimeFormat('en-CA', {
+	timeZone: 'Asia/Shanghai',
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit',
+});
+
+function getArchiveDateParts(date: Date) {
+	const values = Object.fromEntries(
+		archiveDateFormatter
+			.formatToParts(date)
+			.filter(({ type }) => type === 'year' || type === 'month' || type === 'day')
+			.map(({ type, value }) => [type, value]),
+	);
+
+	return {
+		year: Number(values.year),
+		month: Number(values.month),
+		day: Number(values.day),
+	};
+}
+
+function formatArchiveDate(date: Date) {
+	const { year, month, day } = getArchiveDateParts(date);
+	const paddedMonth = String(month).padStart(2, '0');
+	const paddedDay = String(day).padStart(2, '0');
+
+	return {
+		dateTime: `${year}-${paddedMonth}-${paddedDay}`,
+		label: `${paddedMonth}-${paddedDay}`,
+	};
+}
+
+const articles = (await getCollection('articles'))
+	.filter((entry) => !entry.data.draft)
+	.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const articlesByYear = new Map<number, Map<number, typeof articles>>();
+
+for (const article of articles) {
+	const { year, month } = getArchiveDateParts(article.data.date);
+	const articlesByMonth = articlesByYear.get(year) ?? new Map<number, typeof articles>();
+	const monthArticles = articlesByMonth.get(month) ?? [];
+
+	monthArticles.push(article);
+	articlesByMonth.set(month, monthArticles);
+	articlesByYear.set(year, articlesByMonth);
+}
+
+const archiveGroups = Array.from(articlesByYear, ([year, months]) => ({
+	year,
+	months: Array.from(months, ([month, monthArticles]) => ({
+		month,
+		articles: monthArticles.sort(
+			(a, b) => b.data.date.getTime() - a.data.date.getTime(),
+		),
+	})).sort((a, b) => b.month - a.month),
+})).sort((a, b) => b.year - a.year);
+---
+
+<BaseLayout title="归档" description="按时间浏览公开文章。">
+	<div class="content-page">
+		<header class="page-header">
+			<h1>归档</h1>
+			<p class="page-intro">按时间浏览公开文章。</p>
+		</header>
+
+		{archiveGroups.length === 0 ? (
+			<p class="archive-empty">暂无公开文章。</p>
+		) : (
+			<div class="archive" aria-label="文章时间归档">
+				{archiveGroups.map(({ year, months }) => (
+					<section class="archive-year" aria-labelledby={`archive-year-${year}`}>
+						<h2 id={`archive-year-${year}`}>{year}</h2>
+
+						<div class="archive-months">
+							{months.map(({ month, articles: monthArticles }) => (
+								<section
+									class="archive-month"
+									aria-labelledby={`archive-month-${year}-${month}`}
+								>
+									<h3 id={`archive-month-${year}-${month}`}>{month} 月</h3>
+									<ul>
+										{monthArticles.map((article) => {
+											const date = formatArchiveDate(article.data.date);
+
+											return (
+												<li>
+													<time datetime={date.dateTime}>{date.label}</time>
+													<a href={`/articles/${article.id}/`}>{article.data.title}</a>
+												</li>
+											);
+										})}
+									</ul>
+								</section>
+							))}
+						</div>
+					</section>
+				))}
+			</div>
+		)}
+	</div>
+</BaseLayout>

@@ -1,0 +1,55 @@
+.archive {
+	max-width: var(--content-width);
+}
+
+.archive-year + .archive-year {
+	margin-top: 2.75rem;
+}
+
+.archive-year > h2 {
+	margin: 0 0 1.25rem;
+	font-size: 1.8rem;
+	line-height: 1.2;
+}
+
+.archive-month + .archive-month {
+	margin-top: 1.75rem;
+}
+
+.archive-month h3 {
+	margin: 0 0 0.5rem;
+	color: var(--color-muted);
+	font-size: 1.05rem;
+	line-height: 1.4;
+}
+
+.archive-month ul {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.archive-month li {
+	display: grid;
+	grid-template-columns: 3.5rem minmax(0, 1fr);
+	align-items: baseline;
+	padding: 0.5rem 0;
+	gap: 0.75rem;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.archive-month time {
+	color: var(--color-muted);
+	font-size: 0.9rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.archive-month a {
+	min-width: 0;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.archive-empty {
+	color: var(--color-muted);
+}

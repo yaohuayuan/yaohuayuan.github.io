@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	articles: CollectionEntry<'articles'>[];
+	ariaLabel?: string;
+}
+
+const { articles, ariaLabel = '文章列表' } = Astro.props;
+const formatDate = (date: Date) => date.toISOString().slice(0, 10);
+---
+
+<ul class="article-list" aria-label={ariaLabel}>
+	{articles.map((entry) => (
+		<li class="article-list__item">
+			<div class="article-list__heading">
+				<a href={`/articles/${entry.id}/`}>{entry.data.title}</a>
+				<time datetime={formatDate(entry.data.date)}>{formatDate(entry.data.date)}</time>
+			</div>
+			<p>{entry.data.description}</p>
+		</li>
+	))}
+</ul>

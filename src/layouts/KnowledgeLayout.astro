@@ -1,0 +1,52 @@
+---
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import { getKnowledgeSectionLabel } from '../data/taxonomy';
+import '../styles/article.css';
+
+interface Props {
+	title: string;
+	description: string;
+	section: string;
+	updated?: Date;
+	headings: MarkdownHeading[];
+}
+
+const { title, description, section, updated, headings } = Astro.props;
+const formattedUpdated = updated?.toISOString().slice(0, 10);
+const sectionLabel = getKnowledgeSectionLabel(section);
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="article-page">
+		<article class="article" data-pagefind-body>
+			<header class="article-header">
+				<p class="knowledge-section">{sectionLabel}</p>
+				<h1>{title}</h1>
+				<p class="article-description">{description}</p>
+				{formattedUpdated && (
+					<time class="article-date" datetime={formattedUpdated}>更新于 {formattedUpdated}</time>
+				)}
+			</header>
+
+			<div class="article-body-layout">
+				<TableOfContents headings={headings} />
+
+				<div class="article-content">
+					<slot />
+				</div>
+			</div>
+		</article>
+	</div>
+</BaseLayout>
+
+<style>
+	.knowledge-section {
+		margin: 0 0 0.65rem;
+		color: var(--color-accent);
+		font-size: 0.9rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+</style>

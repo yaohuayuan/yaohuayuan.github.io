@@ -1,0 +1,81 @@
+---
+const navigation = [
+	{ label: '首页', href: '/' },
+	{ label: '文章', href: '/articles/' },
+	{ label: '知识库', href: '/knowledge/' },
+	{ label: 'Projects', href: '/projects/' },
+	{ label: 'Labs', href: '/labs/' },
+	{ label: '搜索', href: '/search/' },
+	{ label: 'About', href: '/about/' },
+];
+---
+
+<header class="site-header">
+	<div class="site-header__inner">
+		<a class="site-brand" href="/">曜花缘</a>
+		<nav aria-label="主要导航">
+			<ul>
+				{navigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+			</ul>
+		</nav>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.site-header__inner {
+		display: flex;
+		width: min(calc(100% - 2rem), var(--page-width));
+		min-height: 4rem;
+		margin-inline: auto;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem 2rem;
+	}
+
+	.site-brand {
+		flex: none;
+		color: var(--color-text);
+		font-size: 1.2rem;
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	ul {
+		display: flex;
+		margin: 0;
+		padding: 0;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 0.5rem 1.25rem;
+		list-style: none;
+	}
+
+	nav a {
+		color: var(--color-text);
+		font-size: 0.95rem;
+		text-decoration: none;
+	}
+
+	nav a:hover,
+	nav a:focus-visible {
+		color: var(--color-accent);
+		text-decoration: underline;
+	}
+
+	@media (max-width: 640px) {
+		.site-header__inner {
+			padding-block: 0.85rem;
+			align-items: flex-start;
+			flex-direction: column;
+		}
+
+		ul {
+			justify-content: flex-start;
+		}
+	}
+</style>

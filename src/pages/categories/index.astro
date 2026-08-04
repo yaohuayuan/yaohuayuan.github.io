@@ -1,0 +1,36 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TaxonomyOverview from '../../components/TaxonomyOverview.astro';
+import { getCategoryLabel } from '../../data/taxonomy';
+import '../../styles/page.css';
+
+const articles = (await getCollection('articles'))
+	.filter((entry) => !entry.data.draft);
+
+const categoryCounts = new Map<string, number>();
+
+for (const article of articles) {
+	for (const category of new Set(article.data.categories)) {
+		categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
+	}
+}
+
+const categoryItems = Array.from(categoryCounts, ([slug, count]) => ({
+	slug,
+	label: getCategoryLabel(slug),
+	count,
+	href: `/categories/${slug}/`,
+})).sort((a, b) => a.label.localeCompare(b.label, 'zh-CN'));
+---
+
+<BaseLayout title="分类" description="按主题浏览技术文章。">
+	<div class="content-page">
+		<header class="page-header">
+			<h1>分类</h1>
+			<p class="page-intro">按主题浏览技术文章。</p>
+		</header>
+
+		<TaxonomyOverview items={categoryItems} ariaLabel="分类列表" />
+	</div>
+</BaseLayout>

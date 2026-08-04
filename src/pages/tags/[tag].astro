@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleList from '../../components/ArticleList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getTagLabel } from '../../data/taxonomy';
+import '../../styles/page.css';
+
+export async function getStaticPaths() {
+	const publishedArticles = (await getCollection('articles'))
+		.filter((entry) => !entry.data.draft);
+	const tags = new Set(publishedArticles.flatMap((entry) => entry.data.tags));
+
+	return Array.from(tags, (tag) => ({
+		params: { tag },
+		props: {
+			tag,
+			articles: publishedArticles
+				.filter((entry) => entry.data.tags.includes(tag))
+				.sort((a, b) =>
+					b.data.date.valueOf() - a.data.date.valueOf() ||
+					a.data.title.localeCompare(b.data.title, 'zh-CN')
+				),
+		},
+	}));
+}
+
+const { tag, articles } = Astro.props;
+const tagLabel = getTagLabel(tag);
+---
+
+<BaseLayout title={tagLabel} description={`${tagLabel}标签下的文章。`}>
+	<div class="content-page">
+		<header class="page-header">
+			<h1>{tagLabel}</h1>
+			<p class="page-intro">标签：{tag}</p>
+		</header>
+
+		<ArticleList articles={articles} ariaLabel={`${tagLabel}文章列表`} />
+	</div>
+</BaseLayout>

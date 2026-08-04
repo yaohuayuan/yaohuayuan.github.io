@@ -1,0 +1,74 @@
+---
+interface TaxonomyItem {
+	slug: string;
+	label: string;
+	count: number;
+	href: string;
+}
+
+interface Props {
+	items: TaxonomyItem[];
+	ariaLabel: string;
+}
+
+const { items, ariaLabel } = Astro.props;
+---
+
+<ul class="taxonomy-list" aria-label={ariaLabel}>
+	{items.map((item) => (
+		<li>
+			<a href={item.href}>
+				<span class="taxonomy-label">{item.label}</span>
+				<code>{item.slug}</code>
+			</a>
+			<span class="taxonomy-count">{item.count} 篇</span>
+		</li>
+	))}
+</ul>
+
+<style>
+	.taxonomy-list {
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid var(--color-border);
+		list-style: none;
+	}
+
+	.taxonomy-list li {
+		display: flex;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--color-border);
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.taxonomy-list a {
+		display: flex;
+		min-width: 0;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.4rem 0.75rem;
+	}
+
+	.taxonomy-label {
+		font-weight: 650;
+	}
+
+	code,
+	.taxonomy-count {
+		color: var(--color-muted);
+		font-size: 0.9rem;
+	}
+
+	.taxonomy-count {
+		flex: none;
+	}
+
+	@media (max-width: 480px) {
+		.taxonomy-list li {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+	}
+</style>

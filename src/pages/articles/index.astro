@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/page.css';
+
+const articles = (await getCollection('articles'))
+	.filter((entry) => !entry.data.draft)
+	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const formatDate = (date: Date) => date.toISOString().slice(0, 10);
+---
+
+<BaseLayout title="文章" description="技术文章与阶段性研究记录。">
+	<div class="content-page">
+		<header class="page-header">
+			<h1>文章</h1>
+			<p class="page-intro">技术文章与阶段性研究记录。</p>
+			<nav class="taxonomy-links" aria-label="文章分类入口">
+				<a href="/categories/">分类</a>
+				<a href="/tags/">标签</a>
+				<a href="/series/">系列</a>
+				<a href="/archive/">归档</a>
+			</nav>
+		</header>
+
+		<ul class="article-list" aria-label="文章列表">
+			{articles.map((entry) => (
+				<li class="article-list__item">
+					<div class="article-list__heading">
+						<a href={`/articles/${entry.id}/`}>{entry.data.title}</a>
+						<time datetime={formatDate(entry.data.date)}>{formatDate(entry.data.date)}</time>
+					</div>
+					<p>{entry.data.description}</p>
+				</li>
+			))}
+		</ul>
+	</div>
+</BaseLayout>

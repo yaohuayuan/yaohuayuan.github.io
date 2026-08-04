@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TaxonomyOverview from '../../components/TaxonomyOverview.astro';
+import { getSeriesLabel } from '../../data/taxonomy';
+import '../../styles/page.css';
+
+const articles = (await getCollection('articles'))
+	.filter((entry) => !entry.data.draft && entry.data.series);
+
+const seriesCounts = new Map<string, number>();
+
+for (const article of articles) {
+	const series = article.data.series;
+	if (series) {
+		seriesCounts.set(series, (seriesCounts.get(series) ?? 0) + 1);
+	}
+}
+
+const seriesItems = Array.from(seriesCounts, ([slug, count]) => ({
+	slug,
+	label: getSeriesLabel(slug),
+	count,
+	href: `/series/${slug}/`,
+})).sort((a, b) => a.label.localeCompare(b.label, 'zh-CN'));
+---
+
+<BaseLayout title="系列" description="按连续专题阅读技术文章。">
+	<div class="content-page">
+		<header class="page-header">
+			<h1>系列</h1>
+			<p class="page-intro">按连续专题阅读技术文章。</p>
+		</header>
+
+		<TaxonomyOverview items={seriesItems} ariaLabel="系列列表" />
+	</div>
+</BaseLayout>

@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/page.css';
+---
+
+<BaseLayout title="Labs" description="交互式算法、系统与工程实验。">
+	<div class="content-page">
+		<header class="page-header">
+			<h1>Labs</h1>
+			<p class="page-intro">交互式算法、系统与工程实验。</p>
+		</header>
+
+		<ul class="simple-list" aria-label="实验方向占位列表">
+			<li>
+				<h2>B+ Tree Visualizer</h2>
+				<p>B+ 树结构与操作过程的可视化实验。</p>
+			</li>
+			<li>
+				<h2>Buffer Pool Simulator</h2>
+				<p>缓冲池管理与页面访问过程模拟。</p>
+			</li>
+			<li>
+				<h2>Page Replacement Simulator</h2>
+				<p>页面置换策略与命中过程模拟。</p>
+			</li>
+			<li>
+				<h2>PID Playground</h2>
+				<p>PID 参数与控制过程的实验场。</p>
+			</li>
+		</ul>
+	</div>
+</BaseLayout>

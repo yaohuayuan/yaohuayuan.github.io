@@ -1,0 +1,77 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+	headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
+---
+
+{tocHeadings.length >= 2 && (
+	<nav class="table-of-contents" aria-labelledby="table-of-contents-title">
+		<p id="table-of-contents-title" class="table-of-contents-title">目录</p>
+		<ul>
+			{tocHeadings.map((heading) => (
+				<li class:list={{ 'is-h3': heading.depth === 3 }}>
+					<a href={`#${heading.slug}`}>{heading.text}</a>
+				</li>
+			))}
+		</ul>
+	</nav>
+)}
+
+<style>
+	.table-of-contents {
+		grid-area: toc;
+		position: static;
+		width: 100%;
+		min-width: 0;
+		max-height: none;
+		padding: 0.75rem 0 0.75rem 1rem;
+		margin-bottom: 2rem;
+		overflow: visible;
+		border-left: 3px solid var(--color-border);
+	}
+
+	.table-of-contents-title {
+		margin: 0 0 0.6rem;
+		font-weight: 700;
+	}
+
+	ul {
+		display: grid;
+		padding: 0;
+		margin: 0;
+		gap: 0.35rem;
+		list-style: none;
+	}
+
+	li {
+		min-width: 0;
+	}
+
+	li.is-h3 {
+		padding-inline-start: 1rem;
+	}
+
+	a {
+		display: block;
+		line-height: 1.5;
+		overflow-wrap: anywhere;
+	}
+
+	@media (min-width: 1100px) {
+		.table-of-contents {
+			position: sticky;
+			top: 5rem;
+			align-self: start;
+			max-height: calc(100vh - 7rem);
+			margin-bottom: 0;
+			overflow-x: hidden;
+			overflow-y: auto;
+			font-size: 0.9rem;
+		}
+	}
+</style>

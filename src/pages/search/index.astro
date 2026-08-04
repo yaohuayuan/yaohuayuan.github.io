@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/page.css';
+import '../../styles/search.css';
+---
+
+<BaseLayout title="搜索" description="搜索文章与知识库内容。" noindex>
+	<link
+		slot="head"
+		rel="stylesheet"
+		href="/pagefind/pagefind-component-ui.css"
+	/>
+	<script
+		slot="head"
+		is:inline
+		type="module"
+		src="/pagefind/pagefind-component-ui.js"
+	></script>
+
+	<div class="content-page">
+		<header class="page-header">
+			<h1>搜索</h1>
+			<p class="page-intro">搜索文章与知识库内容。</p>
+		</header>
+
+		{import.meta.env.DEV && (
+			<p class="search-dev-notice">
+				搜索索引在生产构建后生成，请使用构建后的站点测试搜索。
+			</p>
+		)}
+
+		<div class="search-interface">
+			<pagefind-config bundle-path="/pagefind/"></pagefind-config>
+			<pagefind-input placeholder="搜索文章与知识库…"></pagefind-input>
+			<pagefind-summary></pagefind-summary>
+			<pagefind-results></pagefind-results>
+		</div>
+	</div>
+</BaseLayout>

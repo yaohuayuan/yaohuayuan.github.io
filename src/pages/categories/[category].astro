@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleList from '../../components/ArticleList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCategoryLabel } from '../../data/taxonomy';
+import '../../styles/page.css';
+
+export async function getStaticPaths() {
+	const publishedArticles = (await getCollection('articles'))
+		.filter((entry) => !entry.data.draft);
+	const categories = new Set(
+		publishedArticles.flatMap((entry) => entry.data.categories),
+	);
+
+	return Array.from(categories, (category) => ({
+		params: { category },
+		props: {
+			category,
+			articles: publishedArticles
+				.filter((entry) => entry.data.categories.includes(category))
+				.sort((a, b) =>
+					b.data.date.valueOf() - a.data.date.valueOf() ||
+					a.data.title.localeCompare(b.data.title, 'zh-CN')
+				),
+		},
+	}));
+}
+
+const { category, articles } = Astro.props;
+const categoryLabel = getCategoryLabel(category);
+---
+
+<BaseLayout title={categoryLabel} description={`${categoryLabel}分类下的文章。`}>
+	<div class="content-page">
+		<header class="page-header">
+			<h1>{categoryLabel}</h1>
+			<p class="page-intro">分类：{category}</p>
+		</header>
+
+		<ArticleList articles={articles} ariaLabel={`${categoryLabel}文章列表`} />
+	</div>
+</BaseLayout>
