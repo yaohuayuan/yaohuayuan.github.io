@@ -1,43 +1,44 @@
 :root {
-	--color-bg: #f6f7f9;
-	--color-surface: #ffffff;
-	--color-text: #20252b;
-	--color-muted: #667085;
-	--color-border: #dfe3e8;
-	--color-accent: #2859b8;
-	--page-width: 1120px;
-	--content-width: 860px;
+  color-scheme: light;
+  --color-bg: #faf9f6; --color-surface: #fffefa; --color-surface-soft: #f1f0eb; --color-surface-strong: #e8e8e0;
+  --color-text: #222d32; --color-text-secondary: #556064; --color-muted: #66716f;
+  --color-border: #e1e3dc; --color-border-strong: #c6cdc5;
+  --color-accent: #286653; --color-accent-hover: #194b3b; --color-gold: #9b712b;
+  --page-width: 1120px; --content-width: 760px;
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+  --shadow-subtle: 0 1px 2px #20303005; --shadow-raised: 0 12px 32px #20303008;
+  --space-xs: .5rem; --space-sm: 1rem; --space-md: 1.5rem; --space-lg: 2.5rem; --space-xl: 4rem;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
-
-*,
-*::before,
-*::after {
-	box-sizing: border-box;
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #151c20; --color-surface: #1b2428; --color-surface-soft: #202c30; --color-surface-strong: #2b393c;
+  --color-text: #e7ebe5; --color-text-secondary: #b5c2bf; --color-muted: #97aaa5;
+  --color-border: #303d40; --color-border-strong: #475953;
+  --color-accent: #95cdb2; --color-accent-hover: #b7e5ce; --color-gold: #d5b574;
 }
-
-html {
-	font-family:
-		system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-		"Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-	color: var(--color-text);
-	background: var(--color-bg);
-}
-
-body {
-	display: flex;
-	min-height: 100vh;
-	margin: 0;
-	flex-direction: column;
-	font-size: 1rem;
-	line-height: 1.6;
-}
-
-a {
-	color: var(--color-accent);
-	text-underline-offset: 0.18em;
-}
-
-.site-main {
-	width: 100%;
-	flex: 1;
-}
+*, *::before, *::after { box-sizing: border-box; }
+html { font-family: var(--font-sans); color: var(--color-text); background: var(--color-bg); font-synthesis: none; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+body { display: flex; min-width: 0; min-height: 100vh; margin: 0; flex-direction: column; font-size: 1rem; line-height: 1.75; }
+h1,h2,h3,h4 { color: var(--color-text); font-weight: 650; letter-spacing: -.035em; text-wrap: balance; line-height: 1.4; }
+small,time,.metadata,.section-label { font-family: var(--font-mono); font-size: .75rem; font-variant-numeric: tabular-nums; letter-spacing: .025em; }
+a { color: var(--color-accent); text-decoration-thickness: 1px; text-underline-offset: .25em; }
+a:hover { color: var(--color-accent-hover); }
+button,input,select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .5; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 5px; border-radius: 3px; }
+::selection { background: var(--color-accent); color: var(--color-bg); }
+.site-main { width: 100%; min-width: 0; flex: 1; }
+.section-label { margin: 0 0 1rem; color: var(--color-muted); font-size: .69rem; letter-spacing: .12em; text-transform: uppercase; }
+.skip-link { position: fixed; z-index: 100; top: -100px; left: 1rem; padding: .7rem 1rem; background: var(--color-surface); }
+.skip-link:focus { top: .5rem; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: .8rem; min-height: 44px; padding: .65rem 1.1rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-text); font-size: .875rem; text-decoration: none; transition: border-color .18s, transform .18s; }
+.button:hover { border-color: var(--color-accent); transform: translateY(-2px); }
+.button--primary { background: var(--color-accent); color: var(--color-bg); border-color: var(--color-accent); }
+.button--primary:hover { color: var(--color-bg); background: var(--color-accent-hover); }
+.text-link { font-size: .85rem; text-decoration: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation: none !important; transition: none !important; } }
+@media print { .site-header,.site-footer,.table-of-contents,.reading-tools { display: none !important; } :root { --color-bg: white; --color-text: black; --color-text-secondary: #333; } }

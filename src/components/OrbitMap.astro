@@ -1,0 +1,27 @@
+<figure class="orbit-map" aria-label="以计算机系统为基础，连接数据库、人工智能与算法的研究星图">
+  <div class="orbit-caption"><span>FIELD NOTES / 001</span><span>持续探索中 <i></i></span></div>
+  <svg viewBox="0 0 440 370" role="img" aria-label="系统、数据库、人工智能、算法四个研究方向的关联图">
+    <defs><pattern id="orbit-grid" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".7" fill="currentColor" opacity=".18"/></pattern></defs>
+    <rect width="440" height="370" fill="url(#orbit-grid)"/>
+    <g fill="none" stroke="currentColor" opacity=".25"><circle cx="220" cy="185" r="124"/><circle cx="220" cy="185" r="74" stroke-dasharray="3 6"/><ellipse cx="220" cy="185" rx="177" ry="62" transform="rotate(-32 220 185)"/><path d="M220 31v308M35 185h370" stroke-dasharray="2 7"/></g>
+    <path d="M220 61 96 185 282 293 336 128Z" fill="none" stroke="currentColor" stroke-width="1" opacity=".4"/>
+    <circle cx="220" cy="185" r="36" class="orbit-core"/><path d="M220 166v38m-19-19h38m-32-13 26 26m-26 0 26-26" stroke="currentColor" stroke-width="1.5"/>
+    <g class="orbit-node"><circle cx="220" cy="61" r="5"/><circle cx="96" cy="185" r="5"/><circle cx="282" cy="293" r="5"/><circle cx="336" cy="128" r="5"/></g>
+    <g class="orbit-label"><text x="236" y="55">DATABASE</text><text x="38" y="214">SYSTEMS</text><text x="298" y="313">AI</text><text x="348" y="112">ALGO</text></g>
+    <g stroke="currentColor" stroke-width="1"><path d="M49 62v12m-6-6h12M376 259v8m-4-4h8M173 320v8m-4-4h8"/></g>
+    <text x="220" y="244" text-anchor="middle" class="orbit-center-label">CONNECT THE DOTS</text>
+  </svg>
+  <figcaption><span>从一个问题，走向一片星图。</span><span>∞ / 未完待续</span></figcaption>
+</figure>
+<style>
+.orbit-map { margin: 0; color: var(--color-accent); width: 100%; max-width: 440px; justify-self: end; }
+.orbit-map svg { display: block; width: 100%; height: auto; }
+.orbit-caption,figcaption { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); color: var(--color-muted); font-size: .6rem; letter-spacing: .04em; }
+.orbit-caption { padding-bottom: .7rem; border-bottom: 1px solid var(--color-border); }
+.orbit-caption i { display: inline-block; width: 5px; height: 5px; margin-left: .3rem; border-radius: 50%; background: var(--color-accent); }
+figcaption { padding-top: .7rem; border-top: 1px solid var(--color-border); }
+.orbit-core { fill: var(--color-surface-soft); stroke: currentColor; stroke-width: 1; }
+.orbit-node { fill: var(--color-accent); stroke: var(--color-bg); stroke-width: 3; }
+.orbit-label { fill: var(--color-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; }
+.orbit-center-label { fill: var(--color-accent); font-family: var(--font-mono); font-size: 8px; letter-spacing: 2px; }
+</style>

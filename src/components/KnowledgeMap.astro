@@ -1,0 +1,15 @@
+---
+import { getCollection } from 'astro:content';
+import { knowledgeMap } from '../data/knowledge';
+const entries = (await getCollection('knowledge')).filter(e => !e.data.draft);
+---
+<div class="knowledge-map">{knowledgeMap.map((field, index) => <a href={`/knowledge/#${field.id}`}><div class="map-meta"><span>{String(index + 1).padStart(2,'0')}</span><span>{field.symbol}</span></div><h3>{field.title}</h3><p class="map-en">{field.name}</p><p class="map-topics">{field.topics.join(' / ')}</p><div class="map-bottom"><span>{entries.filter(e => field.sections.includes(e.data.section)).length} 篇笔记 · 持续生长</span><span aria-hidden="true">↗</span></div></a>)}</div>
+<style>
+.knowledge-map { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid var(--color-border); border-left:1px solid var(--color-border); }
+.knowledge-map a { display:flex; flex-direction:column; min-width:0; padding:1.4rem 1.5rem; border-right:1px solid var(--color-border); border-bottom:1px solid var(--color-border); color:var(--color-text); text-decoration:none; transition:background .2s; }
+.knowledge-map a:hover { background:var(--color-surface-soft); }
+.map-meta { display:flex; justify-content:space-between; color:var(--color-muted); font: .65rem var(--font-mono); }.map-meta span:last-child{font-size:1.2rem;color:var(--color-accent);}
+h3 { margin:.9rem 0 .3rem; font-size:1rem; }.map-en { font: .68rem var(--font-mono); color:var(--color-muted); margin:0; }.map-topics{font-size:.75rem;color:var(--color-text-secondary);margin:1rem 0 1.4rem;}.map-bottom{margin-top:auto;display:flex;justify-content:space-between;font-size:.65rem;color:var(--color-muted);}
+@media(max-width:740px){.knowledge-map{grid-template-columns:repeat(2,minmax(0,1fr));}.knowledge-map a{padding:1.1rem;}}
+@media(max-width:420px){.knowledge-map{grid-template-columns:1fr;}}
+</style>

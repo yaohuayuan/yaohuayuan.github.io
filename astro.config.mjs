@@ -10,10 +10,11 @@ export default defineConfig({
 	site: 'https://yaohuayuan.github.io',
 	integrations: [
 		sitemap({
-			filter: (page) => new URL(page).pathname !== '/search/',
+			filter: (page) => !['/search/', '/404/', '/404.html'].includes(new URL(page).pathname),
 		}),
 	],
 	markdown: {
+		shikiConfig: { themes: { light: 'github-light', dark: 'github-dark' } },
 		processor: unified({
 			remarkPlugins: [remarkMath],
 			rehypePlugins: [rehypeMathjax],

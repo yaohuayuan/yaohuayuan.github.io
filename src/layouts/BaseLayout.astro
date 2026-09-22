@@ -29,8 +29,15 @@ const siteName = '曜花缘';
 const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const rssURL = new URL('rss.xml', Astro.site);
+const socialImage = new URL('/social-card.png', Astro.site);
 const publishedTimeISO = publishedTime?.toISOString();
 const modifiedTimeISO = modifiedTime?.toISOString();
+const structuredData = type === 'article' ? {
+  '@context': 'https://schema.org', '@type': 'BlogPosting', headline: title, description,
+  url: canonicalURL.href, mainEntityOfPage: canonicalURL.href, image: socialImage.href,
+  author: { '@type': 'Person', name: '曜花缘 / YaoHuaYuan', url: new URL('/about/', Astro.site).href },
+  datePublished: publishedTimeISO, dateModified: modifiedTimeISO ?? publishedTimeISO,
+} : { '@context': 'https://schema.org', '@type': 'WebSite', name: siteName, url: Astro.site.href, description, inLanguage: 'zh-CN' };
 ---
 
 <!doctype html>
@@ -39,6 +46,12 @@ const modifiedTimeISO = modifiedTime?.toISOString();
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="description" content={description} />
+    <meta name="theme-color" content="#faf9f6" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      (() => { let theme; try { theme = localStorage.getItem('yhy-theme'); } catch {} document.documentElement.dataset.theme = theme === 'light' || theme === 'dark' ? theme : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; })();
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />
 		{noindex && <meta name="robots" content="noindex, follow" />}
 		<title>{pageTitle}</title>
 		<link rel="canonical" href={canonicalURL} />
@@ -49,6 +62,10 @@ const modifiedTimeISO = modifiedTime?.toISOString();
 		<meta property="og:site_name" content={siteName} />
 		<meta property="og:locale" content="zh_CN" />
 		<meta property="og:type" content={type} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="曜花缘 YaoHuaYuan · 个人技术档案馆" />
 		{type === 'article' && publishedTimeISO && (
 			<meta property="article:published_time" content={publishedTimeISO} />
 		)}
@@ -56,7 +73,8 @@ const modifiedTimeISO = modifiedTime?.toISOString();
 			<meta property="article:modified_time" content={modifiedTimeISO} />
 		)}
 
-		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content={socialImage} />
 		<meta name="twitter:title" content={pageTitle} />
 		<meta name="twitter:description" content={description} />
 
@@ -70,8 +88,9 @@ const modifiedTimeISO = modifiedTime?.toISOString();
 		<slot name="head" />
 	</head>
 	<body>
+		<a class="skip-link" href="#main-content">跳至主要内容</a>
 		<SiteHeader />
-		<main class="site-main">
+		<main class="site-main" id="main-content" tabindex="-1">
 			<slot />
 		</main>
 		<SiteFooter />

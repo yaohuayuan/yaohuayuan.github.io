@@ -1,0 +1,6 @@
+---
+interface Props { id: string; index: string; label: string; title: string; href?: string; link?: string }
+const { id, index, label, title, href, link = '查看全部' } = Astro.props;
+---
+<header class="section-heading"><div><p class="section-label">{index} / {label}</p><h2 id={id}>{title}</h2></div>{href && <a class="text-link" href={href}>{link} <span aria-hidden="true">↗</span></a>}</header>
+<style>.section-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1.8rem; }.section-label { margin-bottom: .45rem; }.section-heading h2 { margin: 0; font-size: 1.5rem; }.text-link { flex-shrink: 0; }.text-link span { margin-left: .5rem; }@media(max-width:440px){.section-heading h2{font-size:1.3rem;}.text-link{font-size:.75rem;}}</style>

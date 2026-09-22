@@ -1,20 +1,11 @@
-<footer class="site-footer">
-	<div class="site-footer__inner">
-		曜花缘 · Technical Notes · <a href="/rss.xml">RSS</a>
-	</div>
-</footer>
-
+---
+const year = new Date().getFullYear();
+---
+<footer class="site-footer"><div class="footer-inner"><div><a class="footer-brand" href="/">✳ 曜花缘 <span>/ YaoHuaYuan</span></a><p>保持好奇，向深处探索。</p></div><nav aria-label="页脚导航"><a href="https://github.com/yaohuayuan">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="/archive/">时间归档 →</a></nav><small>© {year} YaoHuaYuan<br/>Built with Astro · Always evolving</small></div></footer>
 <style>
-	.site-footer {
-		border-top: 1px solid var(--color-border);
-		background: var(--color-surface);
-		color: var(--color-muted);
-	}
-
-	.site-footer__inner {
-		width: min(calc(100% - 2rem), var(--page-width));
-		margin-inline: auto;
-		padding-block: 1.5rem;
-		font-size: 0.9rem;
-	}
+  .site-footer { border-top: 1px solid var(--color-border); }
+  .footer-inner { width: min(calc(100% - 3rem),var(--page-width)); margin: auto; padding: 2.8rem 0; display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+  .footer-brand { color: var(--color-text); text-decoration: none; font-weight: 600; } .footer-brand span { font-size: .75rem; color: var(--color-muted); font-family: var(--font-mono); font-weight: 400; }
+  p { margin: .4rem 0 0; font-size: .8rem; color: var(--color-muted); } nav { display: flex; gap: 1.4rem; } nav a { font-size: .75rem; color: var(--color-text-secondary); text-decoration: none; } small { color: var(--color-muted); font-size: .65rem; text-align: right; }
+  @media(max-width: 740px) { .footer-inner { width: calc(100% - 2rem); flex-wrap: wrap; gap: 1.5rem; } small { width: 100%; text-align: left; } }
 </style>

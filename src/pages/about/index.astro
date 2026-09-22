@@ -1,19 +1,330 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import '../../styles/page.css';
+
+const focusAreas = [
+	'Database Systems',
+	'AI / LLM Systems',
+	'Computer Systems',
+	'Algorithms',
+	'Mathematical Modeling',
+	'Engineering',
+];
+
+const buildingAreas = [
+	{
+		title: 'Database Kernel',
+		description: '数据库内核、存储与执行机制的实现记录。',
+	},
+	{
+		title: 'AI-Native Database',
+		description: 'AI 与数据库系统结合方向的持续探索。',
+	},
+	{
+		title: 'System Experiments',
+		description: '面向系统机制的原型、实验与验证过程。',
+	},
+	{
+		title: 'Technical Writing',
+		description: '将工程实践和研究过程整理为可长期维护的技术记录。',
+	},
+];
+
+const siteMap = [
+	{ title: 'Articles', description: '时间流技术文章', href: '/articles/' },
+	{ title: 'Knowledge', description: '长期维护知识体系', href: '/knowledge/' },
+	{ title: 'Projects', description: '完整工程与系统', href: '/projects/' },
+	{ title: 'Labs', description: '可交互实验', href: '/labs/' },
+];
 ---
 
 <BaseLayout
 	title="About"
-	description="围绕计算机系统、数据库、AI、算法、数学建模和工程实践构建的个人技术站。"
+	description="围绕计算机系统、数据库、AI、算法、数学建模和工程实践构建的个人技术档案。"
 >
-	<div class="content-page">
-		<header class="page-header">
-			<h1>About</h1>
+	<div class="content-page about-page">
+		<header class="page-header about-header">
+			<p class="section-label">00 / SYSTEM PROFILE</p>
+			<h1>曜花缘</h1>
+			<p class="about-subtitle">Systems · Database · AI · Algorithms</p>
+			<p class="page-intro">
+				这是一个围绕计算机系统、数据库、AI、算法、数学建模与工程实践长期维护的个人技术档案。
+			</p>
 		</header>
 
-		<div class="page-prose">
-			<p>这是一个围绕计算机系统、数据库、AI、算法、数学建模和工程实践构建的个人技术站。</p>
-		</div>
+		<dl class="profile-fields" aria-label="站点基本信息">
+			<div>
+				<dt>NAME</dt>
+				<dd>曜花缘</dd>
+			</div>
+			<div>
+				<dt>FOCUS</dt>
+				<dd>Database Systems / AI Systems</dd>
+			</div>
+			<div>
+				<dt>TYPE</dt>
+				<dd>Technical Archive</dd>
+			</div>
+		</dl>
+
+		<section class="profile-section" aria-labelledby="focus-title">
+			<header class="profile-section__header">
+				<p class="section-label">01 / FOCUS</p>
+				<h2 id="focus-title">技术方向</h2>
+			</header>
+			<ol class="focus-list">
+				{focusAreas.map((area, index) => (
+					<li>
+						<span>{String(index + 1).padStart(2, '0')}</span>
+						<strong>{area}</strong>
+					</li>
+				))}
+			</ol>
+		</section>
+
+		<section class="profile-section" aria-labelledby="building-title">
+			<header class="profile-section__header">
+				<p class="section-label">02 / BUILDING</p>
+				<h2 id="building-title">持续构建</h2>
+			</header>
+			<ul class="building-list">
+				{buildingAreas.map((item, index) => (
+					<li>
+						<span>{String(index + 1).padStart(2, '0')}</span>
+						<div>
+							<h3>{item.title}</h3>
+							<p>{item.description}</p>
+						</div>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="profile-section" aria-labelledby="site-map-title">
+			<header class="profile-section__header">
+				<p class="section-label">03 / SITE MAP</p>
+				<h2 id="site-map-title">内容结构</h2>
+			</header>
+			<nav aria-label="站点内容结构">
+				<ul class="site-map-list">
+					{siteMap.map((item) => (
+						<li>
+							<a href={item.href}>
+								<strong>{item.title}</strong>
+								<span aria-hidden="true">→</span>
+							</a>
+							<p>{item.description}</p>
+						</li>
+					))}
+				</ul>
+			</nav>
+		</section>
 	</div>
 </BaseLayout>
+
+<style>
+	.about-page {
+		max-width: var(--page-width);
+	}
+
+	.about-header {
+		max-width: 58rem;
+		background-image:
+			linear-gradient(rgba(72, 91, 118, 0.022) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(72, 91, 118, 0.022) 1px, transparent 1px);
+		background-size: 72px 72px;
+	}
+
+	.about-header h1 {
+		font-size: clamp(3.25rem, 9vw, 5.75rem);
+		letter-spacing: -0.055em;
+	}
+
+	.about-subtitle {
+		margin: 1rem 0 0;
+		color: var(--color-accent);
+		font-family: var(--font-mono);
+		font-size: clamp(0.85rem, 2vw, 1rem);
+		font-weight: 650;
+		letter-spacing: 0.035em;
+	}
+
+	.profile-fields {
+		display: grid;
+		margin: 0 0 clamp(4rem, 8vw, 7rem);
+		grid-template-columns: 0.8fr 1.45fr 1fr;
+		gap: clamp(1.5rem, 5vw, 4.5rem);
+	}
+
+	.profile-fields > div {
+		min-width: 0;
+		padding: 0.9rem 0 0;
+		border-top: 1px solid var(--color-border-strong);
+	}
+
+	.profile-fields > div + div {
+		padding-left: 0;
+	}
+
+	.profile-fields dt,
+	.focus-list span,
+	.building-list > li > span {
+		color: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 650;
+		letter-spacing: 0.07em;
+	}
+
+	.profile-fields dd {
+		margin: 0.4rem 0 0;
+		color: var(--color-text);
+		font-weight: 650;
+		overflow-wrap: anywhere;
+	}
+
+	.profile-section {
+		display: grid;
+		grid-template-columns: minmax(10rem, 0.72fr) minmax(0, 2fr);
+		gap: 2rem clamp(2.5rem, 7vw, 6rem);
+		padding-top: var(--space-md);
+		border-top: 1px solid var(--color-border-strong);
+	}
+
+	.profile-section + .profile-section {
+		margin-top: clamp(4rem, 8vw, 7rem);
+	}
+
+	.profile-section__header h2 {
+		margin: 0;
+		font-size: clamp(1.55rem, 3vw, 2rem);
+	}
+
+	.focus-list,
+	.building-list,
+	.site-map-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.focus-list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		border-top: 1px solid var(--color-border);
+	}
+
+	.focus-list li {
+		display: grid;
+		min-width: 0;
+		padding: 1rem 1.25rem 1rem 0;
+		grid-template-columns: 2rem minmax(0, 1fr);
+		align-items: baseline;
+		gap: 0.75rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.focus-list li:nth-child(2n) {
+		padding-right: 0;
+		padding-left: 1.25rem;
+		border-left: 1px solid var(--color-border);
+	}
+
+	.focus-list strong {
+		overflow-wrap: anywhere;
+	}
+
+	.building-list,
+	.site-map-list {
+		border-top: 1px solid var(--color-border);
+	}
+
+	.building-list li {
+		display: grid;
+		padding: 1.1rem 0 1.2rem;
+		grid-template-columns: 2rem minmax(0, 1fr);
+		gap: 0.8rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.building-list h3,
+	.site-map-list p {
+		margin: 0;
+	}
+
+	.building-list h3 {
+		font-size: 1rem;
+	}
+
+	.building-list p,
+	.site-map-list p {
+		margin-top: 0.35rem;
+		color: var(--color-text-secondary);
+	}
+
+	.site-map-list li {
+		display: grid;
+		padding: 1rem 0;
+		grid-template-columns: minmax(9rem, 0.8fr) minmax(0, 1.5fr);
+		align-items: baseline;
+		gap: 1rem 2rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.site-map-list a {
+		display: flex;
+		min-width: 0;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	.site-map-list a:hover {
+		color: var(--color-accent-hover);
+	}
+
+	.site-map-list a span {
+		color: var(--color-accent);
+	}
+
+	@media (max-width: 760px) {
+		.about-header h1 {
+			font-size: clamp(3rem, 17vw, 4.5rem);
+		}
+
+		.profile-fields,
+		.profile-section {
+			grid-template-columns: 1fr;
+		}
+
+		.profile-fields > div,
+		.profile-fields > div + div {
+			padding: 0.9rem 0;
+			border-top: 1px solid var(--color-border);
+			border-bottom: 0;
+		}
+
+		.profile-section {
+			gap: 1.75rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.focus-list {
+			grid-template-columns: 1fr;
+		}
+
+		.focus-list li,
+		.focus-list li:nth-child(2n) {
+			padding: 0.9rem 0;
+			border-left: 0;
+		}
+
+		.site-map-list li {
+			grid-template-columns: 1fr;
+			gap: 0.15rem;
+		}
+	}
+</style>

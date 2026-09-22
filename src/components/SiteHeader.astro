@@ -1,81 +1,43 @@
 ---
 const navigation = [
-	{ label: '首页', href: '/' },
-	{ label: '文章', href: '/articles/' },
-	{ label: '知识库', href: '/knowledge/' },
-	{ label: 'Projects', href: '/projects/' },
-	{ label: 'Labs', href: '/labs/' },
-	{ label: '搜索', href: '/search/' },
-	{ label: 'About', href: '/about/' },
+  { label: '文章', code: 'Articles', href: '/articles/' },
+  { label: '知识', code: 'Knowledge', href: '/knowledge/' },
+  { label: '项目', code: 'Projects', href: '/projects/' },
+  { label: '实验室', code: 'Labs', href: '/labs/' },
+  { label: '关于', code: 'About', href: '/about/' },
 ];
+const pathname = Astro.url.pathname;
 ---
-
 <header class="site-header">
-	<div class="site-header__inner">
-		<a class="site-brand" href="/">曜花缘</a>
-		<nav aria-label="主要导航">
-			<ul>
-				{navigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-			</ul>
-		</nav>
-	</div>
+  <div class="site-header__inner">
+    <a class="site-brand" href="/" aria-label="曜花缘 · 首页"><span class="brand-star" aria-hidden="true">✳</span><strong>曜花缘</strong><span class="brand-code">/ YHY</span></a>
+    <nav aria-label="主要导航"><ul>{navigation.map((item) => <li><a href={item.href} aria-current={pathname.startsWith(item.href) ? 'page' : undefined}>{item.label}<span>{item.code}</span></a></li>)}</ul></nav>
+    <div class="header-tools">
+      <a href="/search/" class="icon-button" aria-label="搜索文章与知识库"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></a>
+      <button class="icon-button" id="theme-toggle" type="button" aria-label="切换为暗色模式" aria-pressed="false"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/></svg></button>
+    </div>
+  </div>
 </header>
-
+<script>
+  const button = document.querySelector<HTMLButtonElement>('#theme-toggle');
+  const media = matchMedia('(prefers-color-scheme: dark)');
+  const sync = () => { const dark = document.documentElement.dataset.theme === 'dark'; button?.setAttribute('aria-pressed', String(dark)); button?.setAttribute('aria-label', dark ? '切换为亮色模式' : '切换为暗色模式'); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#151c20' : '#faf9f6'); };
+  sync();
+  button?.addEventListener('click', () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; try { localStorage.setItem('yhy-theme', theme); } catch {} sync(); });
+  media.addEventListener('change', (event) => { let saved; try { saved = localStorage.getItem('yhy-theme'); } catch {} if (saved !== 'light' && saved !== 'dark') { document.documentElement.dataset.theme = event.matches ? 'dark' : 'light'; sync(); } });
+</script>
 <style>
-	.site-header {
-		border-bottom: 1px solid var(--color-border);
-		background: var(--color-surface);
-	}
-
-	.site-header__inner {
-		display: flex;
-		width: min(calc(100% - 2rem), var(--page-width));
-		min-height: 4rem;
-		margin-inline: auto;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem 2rem;
-	}
-
-	.site-brand {
-		flex: none;
-		color: var(--color-text);
-		font-size: 1.2rem;
-		font-weight: 700;
-		text-decoration: none;
-	}
-
-	ul {
-		display: flex;
-		margin: 0;
-		padding: 0;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 0.5rem 1.25rem;
-		list-style: none;
-	}
-
-	nav a {
-		color: var(--color-text);
-		font-size: 0.95rem;
-		text-decoration: none;
-	}
-
-	nav a:hover,
-	nav a:focus-visible {
-		color: var(--color-accent);
-		text-decoration: underline;
-	}
-
-	@media (max-width: 640px) {
-		.site-header__inner {
-			padding-block: 0.85rem;
-			align-items: flex-start;
-			flex-direction: column;
-		}
-
-		ul {
-			justify-content: flex-start;
-		}
-	}
+  .site-header { position: relative; z-index: 10; border-bottom: 1px solid var(--color-border); background: var(--color-bg); }
+  .site-header__inner { width: min(calc(100% - 3rem), var(--page-width)); min-height: 88px; margin: auto; display: flex; align-items: center; gap: 2rem; }
+  .site-brand { display: inline-flex; align-items: center; gap: .65rem; text-decoration: none; color: var(--color-text); white-space: nowrap; }
+  .brand-star { color: var(--color-accent); font-size: 2rem; line-height: 1; }
+  .brand-code { font-family: var(--font-mono); color: var(--color-muted); font-size: .7rem; }
+  nav { margin-left: auto; } ul { display: flex; gap: 1.65rem; list-style: none; padding: 0; margin: 0; }
+  nav a { display: block; color: var(--color-text-secondary); text-decoration: none; font-size: .85rem; padding-block: .5rem; }
+  nav a span { display: block; color: var(--color-muted); font-size: .6rem; font-family: var(--font-mono); line-height: 1.3; }
+  nav a[aria-current="page"] { color: var(--color-accent); text-decoration: underline; text-decoration-thickness: 2px; }
+  .header-tools { display: flex; border-left: 1px solid var(--color-border); padding-left: 1rem; }
+  .icon-button { display: grid; place-items: center; width: 40px; height: 44px; background: none; border: 0; color: var(--color-text-secondary); border-radius: 4px; }
+  .icon-button:hover { background: var(--color-surface-soft); color: var(--color-accent); }
+  @media(max-width: 740px) { .site-header__inner { width: calc(100% - 2rem); flex-wrap: wrap; gap: 0; padding-top: .8rem; } .header-tools { margin-left: auto; border: 0; padding: 0; } nav { order: 3; width: 100%; margin: .3rem 0 0; } ul { justify-content: space-between; gap: .6rem; } nav a { padding-bottom: .9rem; } }
 </style>

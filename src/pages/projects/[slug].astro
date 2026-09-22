@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { projects } from '../../data/projects';
+import '../../styles/page.css';
+export function getStaticPaths() { return projects.map(project => ({ params: { slug: project.slug }, props: { project } })); }
+const { project } = Astro.props;
+---
+<BaseLayout title={project.name} description={project.description}>
+<div class="content-page project-detail">
+  <a class="text-link" href="/projects/">← 所有项目</a>
+  <header class="page-header"><p class="section-label">{project.kind} · {project.status}</p><h1>{project.name}</h1><p class="page-intro">{project.description}</p><div class="project-tags">{project.stack.map(tag=><span>{tag}</span>)}</div>{project.github && <a class="button" href={project.github}>在 GitHub 查看源码 ↗</a>}</header>
+  <section><h2>01 / 项目背景</h2><p>{project.background}</p></section>
+  <section><h2>02 / 技术架构</h2><p>{project.architectureNote}</p>{project.architecture.length > 0 && <ol class="architecture">{project.architecture.map((layer,index)=><li><span>{String(index+1).padStart(2,'0')}</span><strong>{layer}</strong></li>)}</ol>}</section>
+  <section><h2>03 / 核心功能与边界</h2><ul>{project.features.map(feature=><li>{feature}</li>)}</ul></section>
+  <section><h2>04 / 开发过程</h2><ol class="journey">{project.journey.map(step=><li><h3>{step.title}</h3><p>{step.text}</p></li>)}</ol></section>
+  <section><h2>05 / 项目图像</h2>{project.image ? <figure><a href={project.image}><img src={project.image} alt={project.imageAlt} loading="lazy" width="869" height="530"/></a><figcaption>{project.imageAlt} · 点击查看原图</figcaption></figure> : <div class="image-pending"><span aria-hidden="true">⊞</span><p>{project.slug === 'aster' ? '项目尚在筹备，暂无截图。' : '当前暂无已整理的运行截图。上方分层图展示研究目标，后续补充实际运行记录。'}</p></div>}</section>
+  <aside class="source-note">{project.source}</aside>
+  <a class="text-link" href="/labs/">在实验室观察算法与缓冲池机制 →</a>
+</div>
+</BaseLayout>
+<style>
+.project-detail{max-width:880px;}.page-header{margin-top:2rem;}.page-header h1{max-width:none;font-size:clamp(1.8rem,5vw,3.5rem);overflow-wrap:anywhere;}.project-tags{display:flex;gap:.7rem;flex-wrap:wrap;margin:1.5rem 0;font:.75rem var(--font-mono);color:var(--color-muted);}.project-tags span{border:1px solid var(--color-border);padding:.2rem .6rem;border-radius:4px;}
+section{margin-top:3rem;}section h2{font-size:1.25rem;padding-bottom:.8rem;border-bottom:1px solid var(--color-border);}section p,section li{color:var(--color-text-secondary);}section li+li{margin-top:.8rem;}
+.architecture{padding:0;list-style:none;display:grid;gap:.6rem;}.architecture li{display:flex;align-items:center;gap:1.2rem;padding:1rem;background:var(--color-surface-soft);border:1px solid var(--color-border);border-radius:4px;font:.8rem/1.8 var(--font-mono);overflow-wrap:anywhere;}.architecture li+li{margin-top:0;}.architecture span{color:var(--color-accent);}
+.journey{padding-left:1.3rem;}.journey h3{font-size:1rem;margin-bottom:.3rem;}.journey p{margin-top:0;}figure{margin:1rem 0;}figure img{width:100%;height:auto;max-height:720px;object-fit:contain;background:white;border:1px solid var(--color-border);padding:1rem;}figcaption{font-size:.75rem;text-align:center;color:var(--color-muted);}
+.image-pending{display:flex;align-items:center;gap:1.5rem;padding:1.5rem;border:1px dashed var(--color-border-strong);}.image-pending>span{font-size:2rem;color:var(--color-muted);}.image-pending p{font-size:.85rem;margin:0;}
+.source-note{margin:3rem 0 1.5rem;padding:1rem;border-left:2px solid var(--color-accent);background:var(--color-surface-soft);font-size:.8rem;color:var(--color-muted);}
+</style>

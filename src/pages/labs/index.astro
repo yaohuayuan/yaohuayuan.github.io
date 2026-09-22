@@ -1,32 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Experiment from '../../components/Experiment.astro';
+import GrowthModel from '../../components/GrowthModel.astro';
 import '../../styles/page.css';
+import '../../styles/labs.css';
 ---
-
-<BaseLayout title="Labs" description="交互式算法、系统与工程实验。">
-	<div class="content-page">
-		<header class="page-header">
-			<h1>Labs</h1>
-			<p class="page-intro">交互式算法、系统与工程实验。</p>
-		</header>
-
-		<ul class="simple-list" aria-label="实验方向占位列表">
-			<li>
-				<h2>B+ Tree Visualizer</h2>
-				<p>B+ 树结构与操作过程的可视化实验。</p>
-			</li>
-			<li>
-				<h2>Buffer Pool Simulator</h2>
-				<p>缓冲池管理与页面访问过程模拟。</p>
-			</li>
-			<li>
-				<h2>Page Replacement Simulator</h2>
-				<p>页面置换策略与命中过程模拟。</p>
-			</li>
-			<li>
-				<h2>PID Playground</h2>
-				<p>PID 参数与控制过程的实验场。</p>
-			</li>
-		</ul>
-	</div>
+<BaseLayout title="实验室" description="六个可操作的技术实验：二分查找、排序、图遍历、B+Tree 查找、Buffer Pool 与数学增长模型。">
+<div class="content-page"><header class="page-header"><p class="section-label">LABS / LEARN BY EXPLORING</p><h1>观察。提问。动手。</h1><p class="page-intro">把抽象的过程展开成可以暂停、回放和比较的实验。每次只走一步，也能看见全貌。</p></header>
+<nav class="labs-nav" aria-label="实验导航"><a href="#binary">二分查找</a><a href="#sorting">排序</a><a href="#bfs">图遍历</a><a href="#tree">B+Tree</a><a href="#buffer">Buffer Pool</a><a href="#growth">增长模型</a></nav>
+<div class="experiments-grid">
+<Experiment kind="binary" number="01" title="一半，再一半" description="二分查找 · 修改目标值，观察区间与中点如何变化。也试试数组中不存在的数。"/>
+<Experiment kind="sorting" number="02" title="让次序浮现" description="冒泡排序 · 把一次比较和一次交换分开观察，追踪最大元素的移动。"/>
+<Experiment kind="bfs" number="03" title="一层层抵达" description="广度优先搜索 · 固定无向图，从 A 开始，观察队列与最短距离。"/>
+<Experiment kind="tree" number="04" title="沿索引找到答案" description="B+Tree 查找 · 两层、每个叶节点三个键的示例，观察分隔键如何指向叶节点。"/>
+<Experiment kind="buffer" number="05" title="有限空间里的取舍" description="LRU 缓冲池 · 对比不同容量下的命中与淘汰。此简化模型不包含脏页、pin 或并发。"/>
+<GrowthModel/>
+</div></div>
 </BaseLayout>

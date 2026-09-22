@@ -29,15 +29,19 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 		width: 100%;
 		min-width: 0;
 		max-height: none;
-		padding: 0.75rem 0 0.75rem 1rem;
+		padding: 0.8rem 0 0.8rem 1rem;
 		margin-bottom: 2rem;
 		overflow: visible;
-		border-left: 3px solid var(--color-border);
+		border-left: 2px solid var(--color-accent);
 	}
 
 	.table-of-contents-title {
 		margin: 0 0 0.6rem;
+		color: var(--color-text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
 		font-weight: 700;
+		letter-spacing: 0.08em;
 	}
 
 	ul {
@@ -58,8 +62,16 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
 	a {
 		display: block;
+		color: var(--color-text-secondary);
 		line-height: 1.5;
 		overflow-wrap: anywhere;
+		text-decoration: none;
+	}
+
+	a:hover,
+	a:focus-visible {
+		color: var(--color-accent-hover);
+		text-decoration: underline;
 	}
 
 	@media (min-width: 1100px) {

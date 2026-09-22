@@ -2,6 +2,7 @@
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
+import ReadingTools from '../components/ReadingTools.astro';
 import { getCategoryLabel, getSeriesLabel, getTagLabel } from '../data/taxonomy';
 import '../styles/article.css';
 
@@ -27,6 +28,7 @@ const formattedDate = date.toISOString().slice(0, 10);
 	publishedTime={date}
 	modifiedTime={updated}
 >
+	<ReadingTools />
 	<div class="article-page">
 		<article class="article" data-pagefind-body>
 			<header class="article-header">
@@ -78,7 +80,9 @@ const formattedDate = date.toISOString().slice(0, 10);
 		margin-top: 1rem;
 		gap: 0.35rem;
 		color: var(--color-muted);
-		font-size: 0.9rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.02em;
 	}
 
 	.taxonomy-row {
@@ -89,7 +93,16 @@ const formattedDate = date.toISOString().slice(0, 10);
 	}
 
 	.taxonomy-row > span {
-		color: var(--color-text);
+		min-width: 3rem;
+		color: var(--color-text-secondary);
 		font-weight: 650;
+	}
+
+	.taxonomy-row a {
+		text-decoration-color: transparent;
+	}
+
+	.taxonomy-row a:hover {
+		text-decoration-color: currentColor;
 	}
 </style>

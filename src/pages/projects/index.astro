@@ -1,24 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { projects } from '../../data/projects';
 import '../../styles/page.css';
 ---
-
-<BaseLayout title="Projects" description="完整项目、系统实现与长期工程记录。">
-	<div class="content-page">
-		<header class="page-header">
-			<h1>Projects</h1>
-			<p class="page-intro">完整项目、系统实现与长期工程记录。</p>
-		</header>
-
-		<ul class="simple-list" aria-label="项目占位列表">
-			<li>
-				<h2>AI-NATIVE-DBMS-C</h2>
-				<p>数据库系统实现项目占位。</p>
-			</li>
-			<li>
-				<h2>More projects coming later</h2>
-				<p>更多完整项目将在后续逐步整理。</p>
-			</li>
-		</ul>
-	</div>
+<BaseLayout title="项目档案" description="曜花缘的开源项目档案：DBMS_C、AI-NATIVE-DBMS-C，以及正在酝酿中的 Aster。">
+<div class="content-page"><header class="page-header"><p class="section-label">PROJECTS / BUILD TO UNDERSTAND</p><h1>在构建中理解系统。</h1><p class="page-intro">从一个可运行的原型开始，记录架构、取舍，以及每一次向前的迭代。</p></header>
+<div class="projects-grid">{projects.map((project,index) => <ProjectCard project={project} index={index}/>)}</div>
+<p class="project-footnote">项目详情区分已记录的实现与研究规划。每一个阶段，都值得被保存。</p></div>
 </BaseLayout>
+<style>.projects-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.3rem;}.project-footnote{margin-top:2rem;color:var(--color-muted);font-size:.85rem;}@media(max-width:800px){.projects-grid{grid-template-columns:1fr;}}</style>

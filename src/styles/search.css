@@ -11,3 +11,18 @@
 	color: var(--color-muted);
 	background: var(--color-surface);
 }
+
+.search-interface {
+  --pf-background: var(--color-surface);
+  --pf-text: var(--color-text);
+  --pf-text-secondary: var(--color-text-secondary);
+  --pf-text-muted: var(--color-muted);
+  --pf-border: var(--color-border-strong);
+  --pf-border-focus: var(--color-accent);
+  --pf-outline-focus: var(--color-accent);
+  --pf-hover: var(--color-surface-soft);
+  --pf-mark: var(--color-accent);
+  --pf-font: var(--font-sans);
+  --pf-input-height: 48px;
+  color: var(--color-text);
+}

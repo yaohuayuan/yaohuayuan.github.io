@@ -1,0 +1,17 @@
+---
+import type { Project } from '../data/projects';
+interface Props { project: Project; index?: number }
+const { project, index = 0 } = Astro.props;
+---
+<a class:list={['project-card', { 'project-card--planned': project.slug === 'aster' }]} href={`/projects/${project.slug}/`}>
+  <div class="card-top"><span>{project.kind}</span><span class="status"><i></i>{project.status}</span></div>
+  <div class="project-symbol" aria-hidden="true">{index === 0 ? <svg viewBox="0 0 120 66"><g fill="none" stroke="currentColor" stroke-width="1.3"><ellipse cx="39" cy="15" rx="22" ry="8"/><path d="M17 15v31c0 11 44 11 44 0V15M17 30c0 11 44 11 44 0"/><circle cx="92" cy="31" r="13"/><path d="M61 31h18m13-6v12m-6-6h12M92 12V5m0 52v-7M111 31h7"/></g></svg> : index === 1 ? <svg viewBox="0 0 120 66"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="41" y="7" width="38" height="17" rx="2"/><path d="M60 24v10M23 42v-8h74v8"/><rect x="7" y="42" width="32" height="17" rx="2"/><rect x="44" y="42" width="32" height="17" rx="2"/><rect x="81" y="42" width="32" height="17" rx="2"/></g></svg> : <svg viewBox="0 0 120 66"><g stroke="currentColor" fill="none"><circle cx="60" cy="33" r="25" stroke-dasharray="2 4"/><path d="M60 16v34M43 33h34M48 21l24 24m-24 0 24-24"/></g></svg>}</div>
+  <h3>{project.name}<span aria-hidden="true">↗</span></h3><p>{project.description}</p><div class="card-stack">{project.stack.map(tag => <span>{tag}</span>)}</div>
+</a>
+<style>
+.project-card { display:flex;flex-direction:column;min-width:0;padding:1.4rem;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);text-decoration:none;color:var(--color-text);transition:transform .2s,border-color .2s; }.project-card:hover{transform:translateY(-4px);border-color:var(--color-accent);}.project-card--planned{background:transparent;border-style:dashed;}
+.card-top{display:flex;gap:.5rem;justify-content:space-between;font: .52rem var(--font-mono);color:var(--color-muted);align-items:center;}.status{white-space:nowrap;font-family:var(--font-sans);font-size:.6rem;}.status i{display:inline-block;width:4px;height:4px;background:var(--color-accent);border-radius:50%;margin-right:.3rem;}
+.project-symbol{height:101px;display:flex;align-items:center;color:var(--color-accent);}.project-symbol svg{width:100px;height:60px;}
+h3{margin:.1rem 0 .7rem;display:flex;justify-content:space-between;gap:.3rem;font-size:1.05rem;letter-spacing:-.02em;overflow-wrap:anywhere;}h3 span{font-size:.9rem;font-weight:400;color:var(--color-muted);}p{margin:0 0 1.5rem;font-size:.8rem;line-height:1.85;color:var(--color-text-secondary);}
+.card-stack{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:auto;padding-top:1rem;border-top:1px solid var(--color-border);color:var(--color-muted);font:.61rem var(--font-mono);}
+</style>

@@ -1,0 +1,19 @@
+<section class="experiment-panel" id="growth" aria-labelledby="growth-title"><header><p class="section-label">06 / MATHEMATICAL MODELING</p><h2 id="growth-title">增长的边界</h2><p>调整增长率，对比 Logistic 与指数增长。相同的初值，不同的模型假设。</p></header>
+<growth-model>
+<label class="growth-control">增长率 r <input type="range" min="0.1" max="0.5" step="0.05" value="0.3" aria-label="增长率"/><output>0.30</output></label>
+<svg viewBox="0 0 650 260" role="img" aria-label="Logistic 与指数增长曲线，横轴时间，纵轴数量"><g stroke="var(--color-border)" fill="none"><path d="M50 20v200h560M50 120h560M50 20h560"/></g><path data-exponential fill="none" stroke="var(--color-gold)" stroke-width="2" stroke-dasharray="6 4"/><path data-logistic fill="none" stroke="var(--color-accent)" stroke-width="2.5"/><g fill="var(--color-muted)" font-size="11"><text x="15" y="225">0</text><text x="10" y="25" data-ymax></text><text x="50" y="242">0</text><text x="596" y="242">10</text><text x="307" y="252">时间 t</text><text x="8" y="12">数量</text></g></svg>
+<p class="model-legend"><span>━ Logistic（容量 K = 100）</span><span>┄ 指数增长</span></p>
+<p class="experiment-message" data-growth-result role="status" aria-live="polite"></p><p class="experiment-detail">N₀ = 5 · Logistic: K / (1 + (K/N₀ − 1)e⁻ʳᵗ) · Exponential: N₀eʳᵗ<br/>纵轴随数据范围缩放。理论模型演示，不对应实测预测。</p>
+<noscript><p>启用 JavaScript 后可调整增长率并查看曲线。</p></noscript>
+</growth-model></section>
+<script>
+import {growthValues} from '../lib/experiments';
+class GrowthModel extends HTMLElement {
+  connectedCallback(){const slider=this.querySelector('input')!;const draw=()=>{const rate=Number(slider.value);const values=growthValues(rate);const max=Math.max(100,Math.ceil(values[100].exponential/50)*50);
+  const path=(key:'logistic'|'exponential')=>values.map((value,i)=>`${i?'L':'M'}${50+value.t*56},${220-value[key]/max*200}`).join(' ');
+  this.querySelector('[data-logistic]')!.setAttribute('d',path('logistic'));this.querySelector('[data-exponential]')!.setAttribute('d',path('exponential'));
+  this.querySelector('output')!.textContent=rate.toFixed(2);this.querySelector('[data-ymax]')!.textContent=String(max);
+  this.querySelector('[data-growth-result]')!.textContent=`t = 10 时，Logistic ≈ ${values[100].logistic.toFixed(1)}，指数增长 ≈ ${values[100].exponential.toFixed(1)}。`;};slider.addEventListener('input',draw);draw();}
+}
+if(!customElements.get('growth-model'))customElements.define('growth-model',GrowthModel);
+</script>

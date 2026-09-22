@@ -1,0 +1,57 @@
+---
+interface Props { kind: 'binary'|'sorting'|'bfs'|'buffer'|'tree'; title: string; description: string; number: string }
+const { kind,title,description,number }=Astro.props;
+---
+<section class="experiment-panel" id={kind} aria-labelledby={`title-${kind}`}>
+<header><p class="section-label">{number} / INTERACTIVE EXPERIMENT</p><h2 id={`title-${kind}`}>{title}</h2><p>{description}</p></header>
+<archive-experiment data-kind={kind}>
+  <div class="experiment-options">
+    {(kind==='binary'||kind==='tree') && <label>目标值 <input data-target type="number" value="42" min="0" max="99" step="1"/></label>}
+    {kind==='buffer' && <label>缓冲帧数 <select data-capacity><option value="2">2 页</option><option value="3" selected>3 页</option><option value="4">4 页</option></select></label>}
+    <span class="experiment-counter" data-counter></span>
+  </div>
+  {kind==='bfs' && <svg class="graph-diagram" viewBox="0 0 420 160" role="img" aria-label="无向图：A 连接 B 和 C，B 连接 D 和 E，C 连接 F，E 连接 F"><g stroke="currentColor" fill="none" opacity=".4"><path d="M40 80 155 30 295 25M40 80 155 130 375 125 295 85 155 30"/></g>{[[40,80],[155,30],[155,130],[295,25],[295,85],[375,125]].map(([x,y],i)=><g><circle cx={x} cy={y} r="16" fill="var(--color-surface)" stroke="currentColor"/><text x={x} y={y+4} text-anchor="middle" fill="currentColor">{String.fromCharCode(65+i)}</text></g>)}</svg>}
+  <div class:list={['experiment-cells',{'experiment-bars':kind==='sorting'}]} data-cells aria-label="实验当前状态"></div>
+  <p class="experiment-message" data-message role="status" aria-live="polite"></p><p class="experiment-detail" data-detail></p>
+  <div class="experiment-controls"><button class="button" data-prev type="button">← 上一步</button><button class="button button--primary" data-next type="button">下一步 →</button><button class="button" data-play type="button" aria-pressed="false">自动播放</button><button class="button" data-reset type="button">重置</button></div>
+  <noscript><p>启用 JavaScript 后可逐步操作。此实验只演示预设算法。</p></noscript>
+</archive-experiment>
+</section>
+<script>
+import { binaryFrames,sortingFrames,bfsFrames,bufferFrames,treeFrames,type Frame } from '../lib/experiments';
+class ArchiveExperiment extends HTMLElement {
+  frames:Frame[]=[]; step=0; timer:ReturnType<typeof setInterval>|undefined; controller=new AbortController();
+  connectedCallback(){
+    this.controller=new AbortController(); const options={signal:this.controller.signal};
+    this.querySelector('[data-next]')?.addEventListener('click',()=>{this.pause();this.move(1);},options);
+    this.querySelector('[data-prev]')?.addEventListener('click',()=>{this.pause();this.move(-1);},options);
+    this.querySelector('[data-reset]')?.addEventListener('click',()=>this.reset(),options);
+    this.querySelector('[data-play]')?.addEventListener('click',()=>{if(this.timer){this.pause();return;}if(this.step===this.frames.length-1)this.step=0;this.timer=setInterval(()=>{this.move(1);if(this.step===this.frames.length-1)this.pause();},900);this.render();},options);
+    this.querySelectorAll('input,select').forEach(control=>control.addEventListener('change',()=>this.reset(),options));
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)this.pause();},options);this.reset();
+  }
+  disconnectedCallback(){this.pause();this.controller.abort();}
+  reset(){
+    this.pause();this.step=0;
+    const input=this.querySelector<HTMLInputElement>('[data-target]');
+    const target=input?Math.min(99,Math.max(0,Math.round(Number(input.value)||0))):42;if(input)input.value=String(target);
+    const capacity=Number(this.querySelector<HTMLSelectElement>('[data-capacity]')?.value??3);
+    this.frames=this.dataset.kind==='binary'?binaryFrames(target):this.dataset.kind==='sorting'?sortingFrames():this.dataset.kind==='bfs'?bfsFrames():this.dataset.kind==='buffer'?bufferFrames(capacity):treeFrames(target);
+    this.render();
+  }
+  pause(){if(this.timer)clearInterval(this.timer);this.timer=undefined;const play=this.querySelector<HTMLButtonElement>('[data-play]');if(play){play.textContent='自动播放';play.setAttribute('aria-pressed','false');}}
+  move(delta:number){this.step=Math.min(this.frames.length-1,Math.max(0,this.step+delta));this.render();}
+  render(){
+    const frame=this.frames[this.step];if(!frame)return;
+    const cells=this.querySelector<HTMLElement>('[data-cells]')!;
+    cells.replaceChildren(...frame.cells.map(cell=>{const element=document.createElement('span');element.className='experiment-cell '+(cell.state??'');element.textContent=String(cell.value);if(this.dataset.kind==='sorting')element.style.setProperty('--height',String(Number(cell.value)/78*100)+'%');return element;}));
+    this.querySelector('[data-message]')!.textContent=frame.message;
+    this.querySelector('[data-detail]')!.textContent=frame.detail??'高亮：当前比较 / 访问 · 实心：已完成 · 淡化：已排除';
+    this.querySelector('[data-counter]')!.textContent=`${this.step+1} / ${this.frames.length}`;
+    this.querySelector<HTMLButtonElement>('[data-prev]')!.disabled=this.step===0;
+    this.querySelector<HTMLButtonElement>('[data-next]')!.disabled=this.step===this.frames.length-1;
+    const play=this.querySelector<HTMLButtonElement>('[data-play]')!;play.textContent=this.timer?'暂停':'自动播放';play.setAttribute('aria-pressed',String(Boolean(this.timer)));
+  }
+}
+if(!customElements.get('archive-experiment'))customElements.define('archive-experiment',ArchiveExperiment);
+</script>

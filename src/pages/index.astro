@@ -1,161 +1,39 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-
-const recentArticles = (await getCollection('articles'))
-	.filter((entry) => !entry.data.draft)
-	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-	.slice(0, 5);
-
-const formatDate = (date: Date) => date.toISOString().slice(0, 10);
+import SectionHeading from '../components/SectionHeading.astro';
+import OrbitMap from '../components/OrbitMap.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import KnowledgeMap from '../components/KnowledgeMap.astro';
+import { projects } from '../data/projects';
+import { getCategoryLabel } from '../data/taxonomy';
+import '../styles/home.css';
+const articles = (await getCollection('articles')).filter(e => !e.data.draft).sort((a,b) => b.data.date.valueOf() - a.data.date.valueOf());
+const recent = articles.slice(0,3);
 ---
-
-<BaseLayout title="曜花缘" description="Systems · Database · AI · Algorithms">
-	<div class="home-page">
-		<section class="hero" aria-labelledby="hero-title">
-			<h1 id="hero-title">曜花缘</h1>
-			<p>Systems · Database · AI · Algorithms</p>
-		</section>
-
-		<section class="recent-articles" aria-labelledby="recent-title">
-			<h2 id="recent-title">Recent Articles</h2>
-			<ul>
-				{recentArticles.map((entry) => (
-					<li>
-						<div class="article-title-row">
-							<a href={`/articles/${entry.id}/`}>{entry.data.title}</a>
-							<time datetime={formatDate(entry.data.date)}>{formatDate(entry.data.date)}</time>
-						</div>
-						<p>{entry.data.description}</p>
-					</li>
-				))}
-			</ul>
-		</section>
-
-		<section class="site-entries" aria-label="站点入口">
-			<a href="/knowledge/">
-				<h2>Knowledge</h2>
-				<p>系统整理长期积累的技术知识。</p>
-			</a>
-			<a href="/projects/">
-				<h2>Projects</h2>
-				<p>记录工程实践与项目成果。</p>
-			</a>
-			<a href="/labs/">
-				<h2>Labs</h2>
-				<p>收纳实验、原型与探索过程。</p>
-			</a>
-		</section>
-	</div>
+<BaseLayout title="曜花缘" description="曜花缘 / YaoHuaYuan 的个人技术档案馆。探索计算机系统、数据库与人工智能的边界，记录算法、数学建模与软件工程实践。">
+<div class="home-page">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="section-label"><span class="tiny-star">✦</span> A PERSONAL TECHNICAL ARCHIVE</p>
+      <h1 id="hero-title">曜花缘<span>YaoHuaYuan<span class="name-period">.</span></span></h1>
+      <p class="hero-intro">探索计算机系统、数据库<br class="desktop-break"/>与人工智能的边界。</p>
+      <p class="hero-description">计算机科学与技术方向的学习者与构建者。<br/>在这里，记录从理解一个原理，到构建一个系统的过程。</p>
+      <div class="hero-actions"><a class="button button--primary" href="/projects/">探索我的项目 <span aria-hidden="true">↗</span></a><a class="hero-secondary" href="/about/">关于我 <span aria-hidden="true">→</span></a></div>
+    </div>
+    <OrbitMap/>
+  </section>
+  <section class="current-focus" aria-label="当前研究方向"><div><span class="focus-dot"></span><span>当前专注</span><small>CURRENT FOCUS</small></div><a href="/projects/dbms-c/">Database Kernel <span>↗</span></a><a href="/projects/ai-native-dbms/">AI Native Database <span>↗</span></a><a href="/knowledge/#cs">Computer Systems <span>↗</span></a></section>
+  <section class="home-section" aria-labelledby="projects-title">
+    <SectionHeading id="projects-title" index="01" label="SELECTED PROJECTS" title="在构建中理解系统" href="/projects/" link="项目档案"/>
+    <div class="project-grid">{projects.map((project,index) => <ProjectCard project={project} index={index}/>)}</div>
+  </section>
+  <section class="home-section writing-section" aria-labelledby="writing-title">
+    <SectionHeading id="writing-title" index="02" label="RECENT WRITING" title="沿途的思考与记录" href="/articles/" link="全部文章"/>
+    <div class="writing-layout"><p class="writing-aside">把问题拆开，<br/>把思考留下。<span>算法 · 建模 · 开发日志</span><a href="/rss.xml">订阅 RSS ↗</a></p><ul class="writing-index">{recent.map((entry,index) => <li><a href={`/articles/${entry.id}/`}><div class="writing-meta"><time datetime={entry.data.date.toISOString()}>{entry.data.date.toISOString().slice(0,10)}</time><span>{entry.data.categories[0] ? getCategoryLabel(entry.data.categories[0]) : '技术文章'}</span></div><h3>{entry.data.title}<span aria-hidden="true">↗</span></h3><p>{entry.data.description}</p></a></li>)}</ul></div>
+  </section>
+  <section class="home-section" aria-labelledby="knowledge-title"><SectionHeading id="knowledge-title" index="03" label="KNOWLEDGE CONSTELLATION" title="让知识，逐渐连成星图" href="/knowledge/" link="进入知识库"/><KnowledgeMap/></section>
+  <section class="labs-entry" aria-labelledby="labs-title"><div class="labs-illustration" aria-hidden="true"><span>[</span><i style="--bar:30%"></i><i style="--bar:50%"></i><i style="--bar:38%"></i><i style="--bar:78%"></i><i style="--bar:62%"></i><i style="--bar:94%"></i><span>]</span></div><div><p class="section-label">04 / THE LABORATORY</p><h2 id="labs-title">让抽象的原理，变得触手可及。</h2><p>从一次二分查找到一个缓冲池，在交互中观察系统如何工作。</p><a class="text-link" href="/labs/">进入实验室 <span aria-hidden="true">→</span></a></div><span class="lab-note">OBSERVE.<br/>QUESTION.<br/>BUILD.</span></section>
+  <div class="home-colophon"><span>✦ 从好奇出发，以工程作答。</span><span>THIS ARCHIVE IS ALWAYS A WORK IN PROGRESS.</span></div>
+</div>
 </BaseLayout>
-
-<style>
-	.home-page {
-		width: min(calc(100% - 2rem), var(--page-width));
-		margin-inline: auto;
-		padding: 3rem 0 5rem;
-	}
-
-	.hero {
-		padding: clamp(2rem, 8vw, 5rem) 0;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.hero h1 {
-		margin: 0;
-		font-size: clamp(2.75rem, 9vw, 5rem);
-		line-height: 1.1;
-	}
-
-	.hero p {
-		margin: 1rem 0 0;
-		color: var(--color-muted);
-		font-size: clamp(1rem, 3vw, 1.25rem);
-	}
-
-	.recent-articles {
-		padding-block: 3rem;
-	}
-
-	.recent-articles h2,
-	.site-entries h2 {
-		margin-top: 0;
-	}
-
-	.recent-articles ul {
-		margin: 1.5rem 0 0;
-		padding: 0;
-		border-top: 1px solid var(--color-border);
-		list-style: none;
-	}
-
-	.recent-articles li {
-		padding: 1.25rem 0;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.article-title-row {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.75rem 1.5rem;
-	}
-
-	.article-title-row a {
-		font-size: 1.1rem;
-		font-weight: 650;
-	}
-
-	.article-title-row time,
-	.recent-articles li p {
-		color: var(--color-muted);
-	}
-
-	.article-title-row time {
-		flex: none;
-		font-size: 0.9rem;
-	}
-
-	.recent-articles li p {
-		margin: 0.45rem 0 0;
-	}
-
-	.site-entries {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 1rem;
-	}
-
-	.site-entries a {
-		padding: 1.25rem;
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		color: var(--color-text);
-		text-decoration: none;
-	}
-
-	.site-entries h2 {
-		margin-bottom: 0.5rem;
-		font-size: 1.2rem;
-	}
-
-	.site-entries p {
-		margin: 0;
-		color: var(--color-muted);
-	}
-
-	@media (max-width: 640px) {
-		.home-page {
-			padding-top: 1.5rem;
-		}
-
-		.article-title-row {
-			align-items: flex-start;
-			flex-direction: column;
-		}
-
-		.site-entries {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>

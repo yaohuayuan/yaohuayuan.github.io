@@ -1,74 +1,22 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getKnowledgeSectionLabel, knowledgeSectionLabels } from '../../data/taxonomy';
+import { knowledgeMap } from '../../data/knowledge';
 import '../../styles/page.css';
-
-const knowledgeEntries = (await getCollection('knowledge'))
-	.filter((entry) => !entry.data.draft);
-
-const groupedKnowledge = new Map<string, typeof knowledgeEntries>();
-
-for (const entry of knowledgeEntries) {
-	const entries = groupedKnowledge.get(entry.data.section) ?? [];
-	entries.push(entry);
-	groupedKnowledge.set(entry.data.section, entries);
-}
-
-const knowledgeSections = Array.from(groupedKnowledge, ([section, entries]) => ({
-	section,
-	label: getKnowledgeSectionLabel(section),
-	entries: entries.sort((a, b) =>
-		a.data.order - b.data.order || a.data.title.localeCompare(b.data.title, 'zh-CN')
-	),
-})).sort((a, b) => a.label.localeCompare(b.label, 'zh-CN'));
-
-const knowledgeDirections = Object.values(knowledgeSectionLabels);
+const entries = (await getCollection('knowledge')).filter(e=>!e.data.draft).sort((a,b)=>a.data.order-b.data.order);
+const extraEntries = entries.filter(entry => !knowledgeMap.some(field=>field.sections.includes(entry.data.section)));
 ---
-
-<BaseLayout title="知识库" description="长期维护的计算机与工程知识体系。">
-	<div class="content-page">
-		<header class="page-header">
-			<h1>知识库</h1>
-			<p class="page-intro">长期维护的计算机与工程知识体系。</p>
-		</header>
-
-		<div class="knowledge-groups">
-			{knowledgeSections.map((group, index) => (
-				<section class="knowledge-group" aria-labelledby={`knowledge-section-${index}`}>
-					<h2 id={`knowledge-section-${index}`}>{group.label}</h2>
-					<ul class="article-list">
-						{group.entries.map((entry) => (
-							<li class="article-list__item">
-								<div class="article-list__heading">
-									<a href={`/knowledge/${entry.id}/`}>{entry.data.title}</a>
-								</div>
-								<p>{entry.data.description}</p>
-							</li>
-						))}
-					</ul>
-				</section>
-			))}
-		</div>
-
-		<section class="knowledge-directions" aria-labelledby="directions-title">
-			<h2 id="directions-title">知识方向</h2>
-			<ul class="simple-list">
-				{knowledgeDirections.map((direction) => <li>{direction}</li>)}
-			</ul>
-		</section>
-	</div>
+<BaseLayout title="知识星图" description="计算机基础、数据库、AI、算法、数学建模与软件工程的长期知识索引。">
+<div class="content-page"><header class="page-header"><p class="section-label">KNOWLEDGE / CONNECT THE DOTS</p><h1>知识不是孤立的点。</h1><p class="page-intro">从基础概念到系统设计，逐步搭建一张可以反复回访的知识地图。</p></header>
+<nav class="knowledge-jump" aria-label="知识领域">{knowledgeMap.map(field=><a href={`#${field.id}`}>{field.title}</a>)}</nav>
+<div class="knowledge-sections">{knowledgeMap.map(field => {
+const notes = entries.filter(entry=>field.sections.includes(entry.data.section));
+return <section id={field.id} class="knowledge-field"><header><span>{field.symbol}</span><div><p class="section-label">{field.name}</p><h2>{field.title}</h2></div><small>{notes.length} 篇笔记</small></header><p class="topic-line">学习路径 / {field.topics.join(' → ')}</p>{notes.length ? <ul class="article-list">{notes.map(entry=><li class="article-list__item"><div class="article-list__heading"><a href={`/knowledge/${entry.id}/`}>{entry.data.title} ↗</a></div><p>{entry.data.description}</p></li>)}</ul> : <p class="empty-notes">这个方向的知识节点正在整理。学习路径先行，笔记会在这里逐步积累。</p>}</section>;
+})}
+{extraEntries.length>0 && <section class="knowledge-field"><h2>其他知识节点</h2><ul>{extraEntries.map(entry=><li><a href={`/knowledge/${entry.id}/`}>{entry.data.title}</a></li>)}</ul></section>}
+</div></div>
 </BaseLayout>
-
 <style>
-	.knowledge-group + .knowledge-group,
-	.knowledge-directions {
-		margin-top: 3rem;
-	}
-
-	.knowledge-group h2,
-	.knowledge-directions h2 {
-		margin: 0 0 1rem;
-		font-size: 1.4rem;
-	}
+.knowledge-jump{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:2.5rem;}.knowledge-jump a{padding:.4rem .8rem;border:1px solid var(--color-border);border-radius:4px;text-decoration:none;font-size:.8rem;}.knowledge-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2.5rem;}
+.knowledge-field{scroll-margin-top:2rem;border-top:1px solid var(--color-border-strong);padding-top:1.4rem;min-width:0;}.knowledge-field header{display:flex;align-items:center;gap:1rem;}.knowledge-field header>span{font-size:1.8rem;color:var(--color-accent);}.knowledge-field h2{font-size:1.2rem;margin:0;}.knowledge-field .section-label{margin:0;font-size:.6rem;}.knowledge-field small{margin-left:auto;font-size:.65rem;color:var(--color-muted);}.topic-line{font-size:.75rem;color:var(--color-text-secondary);margin:1.4rem 0;}.empty-notes{font-size:.8rem;color:var(--color-muted);padding:1rem;background:var(--color-surface-soft);}.article-list__item p{font-size:.85rem;}@media(max-width:740px){.knowledge-sections{grid-template-columns:1fr;}}
 </style>
