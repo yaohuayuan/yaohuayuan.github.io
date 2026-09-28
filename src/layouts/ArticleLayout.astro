@@ -1,5 +1,6 @@
 ---
 import type { MarkdownHeading } from 'astro';
+import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import ReadingTools from '../components/ReadingTools.astro';
@@ -13,12 +14,15 @@ interface Props {
 	categories: string[];
 	tags: string[];
 	series?: string;
+	previous?: CollectionEntry<'articles'>;
+	next?: CollectionEntry<'articles'>;
 	updated?: Date;
 	headings: MarkdownHeading[];
 }
 
-const { title, description, date, categories, tags, series, updated, headings } = Astro.props;
+const { title, description, date, categories, tags, series, previous, next, updated, headings } = Astro.props;
 const formattedDate = date.toISOString().slice(0, 10);
+const formatDate = (entryDate: Date) => entryDate.toISOString().slice(0, 10);
 ---
 
 <BaseLayout
@@ -70,6 +74,25 @@ const formattedDate = date.toISOString().slice(0, 10);
 					<slot />
 				</div>
 			</div>
+
+			{(previous || next) && (
+				<nav class="series-nav" aria-label={`${series ? getSeriesLabel(series) : ''}系列导航`}>
+					{previous ? (
+						<a class="series-nav__link series-nav__link--previous" href={`/articles/${previous.id}/`} rel="prev">
+							<span class="series-nav__label">← 上一篇</span>
+							<span class="series-nav__title">{previous.data.title}</span>
+							<time datetime={formatDate(previous.data.date)}>{formatDate(previous.data.date)}</time>
+						</a>
+					) : <span class="series-nav__spacer" aria-hidden="true"></span>}
+					{next ? (
+						<a class="series-nav__link series-nav__link--next" href={`/articles/${next.id}/`} rel="next">
+							<span class="series-nav__label">下一篇 →</span>
+							<span class="series-nav__title">{next.data.title}</span>
+							<time datetime={formatDate(next.data.date)}>{formatDate(next.data.date)}</time>
+						</a>
+					) : <span class="series-nav__spacer" aria-hidden="true"></span>}
+				</nav>
+			)}
 		</article>
 	</div>
 </BaseLayout>
@@ -104,5 +127,64 @@ const formattedDate = date.toISOString().slice(0, 10);
 
 	.taxonomy-row a:hover {
 		text-decoration-color: currentColor;
+	}
+
+	.series-nav {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+		margin-top: 3.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.series-nav__link {
+		display: grid;
+		gap: 0.3rem;
+		padding: 1rem 1.1rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		text-decoration: none;
+	}
+
+	.series-nav__link:hover {
+		border-color: var(--color-accent);
+	}
+
+	.series-nav__link--next {
+		text-align: right;
+	}
+
+	.series-nav__label {
+		color: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 0.63rem;
+		letter-spacing: 0.04em;
+	}
+
+	.series-nav__title {
+		font-size: 0.9rem;
+		line-height: 1.6;
+	}
+
+	.series-nav time {
+		color: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 0.63rem;
+	}
+
+	@media (max-width: 620px) {
+		.series-nav {
+			grid-template-columns: 1fr;
+		}
+
+		.series-nav__link--next {
+			text-align: left;
+		}
+
+		.series-nav__spacer {
+			display: none;
+		}
 	}
 </style>

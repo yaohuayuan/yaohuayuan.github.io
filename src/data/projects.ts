@@ -1,6 +1,6 @@
 export interface Project {
   slug: string; name: string; kind: string; status: string; description: string; stack: string[];
-  github?: string; background: string; architecture: string[]; architectureNote: string; features: string[]; journey: { title: string; text: string }[]; image?: string; imageAlt?: string; source: string;
+  github?: string; background: string; architecture: string[]; architectureNote: string; features: string[]; journey: { title: string; text: string }[]; image?: string; imageAlt?: string; series?: string; seriesNote?: string; source: string;
 }
 export const projects: Project[] = [
   {
@@ -15,16 +15,17 @@ export const projects: Project[] = [
     source: '根据本地仓库 README 与项目概览整理；具体进度以仓库最新记录为准。本页未重新运行数据库测试。',
   },
   {
-    slug: 'dbms-c', name: 'DBMS_C', kind: '02 / DATABASE KERNEL', status: '阶段归档',
-    description: '用 C 语言走通从 SQL 解析到页面存储的完整学习路径。',
-    stack: ['C', 'SQL', 'CMocka'], github: 'https://github.com/yaohuayuan/PhoenixDB',
-    background: '本科毕业设计阶段的轻量化教学型数据库原型。通过亲手连接解析、计划、执行、事务与存储，理解一条 SQL 在系统内部的旅程。',
-    architecture: ['SQL CLI → parse → plan', 'query / record / metadata / hash index', 'transaction → log / recovery', 'buffer · LRU → file / page'],
-    architectureNote: '依据项目 README 和模块调用关系整理的概览，不代表每次查询都经过所有模块。',
-    features: ['项目文档列出建表、插入、查询、条件与多表查询，以及更新、删除、视图和索引。', '事务提交与回滚、日志恢复支撑、LRU 页面替换及基础哈希索引。', '配有 SQL 演示脚本与 CMocka 单元测试，定位为教学原型。'],
-    journey: [{ title: '建立存储基础', text: '围绕块、页、文件、缓冲区和日志组织底层模块。' }, { title: '连接 SQL 执行链', text: '将解析、查询计划、扫描执行和元数据串联为可演示流程。' }, { title: '沉淀与继续探索', text: '保留毕业设计文档与演示；后续研究在 AI-NATIVE-DBMS-C 中展开。' }],
+    slug: 'dbms-c', name: 'DBMS_C', kind: '02 / DATABASE KERNEL', status: 'v1.0 归档',
+    description: '用 C 语言从零实现的教学型关系数据库原型：从 SQL 解析到页面存储打通一条可运行、可测试的主链路。',
+    stack: ['C11', 'CMake', 'CMocka'], github: 'https://github.com/yaohuayuan/DBMS_C',
+    series: 'dbms-c-from-zero', seriesNote: '13 篇开发系列：1 篇系列导读 + 12 篇正文，按数据库内核的依赖顺序逐层展开。',
+    background: '本科毕业设计阶段的轻量化教学型数据库原型。它不做网络层、权限体系和工业级恢复，只把「一条 SQL 怎样变成某个页面上的几组字节」这条主链路完整走通，让每个数据库核心机制都能对应到一段可读、可运行的源码。',
+    architecture: ['SQL CLI → parse → plan', 'query / record / metadata / hash index（元数据）', 'transaction → log / recovery', 'buffer · LRU → file / page'],
+    architectureNote: '依据项目 README 和模块调用关系整理的概览；index、BetterQueryPlanner 与恢复入口已有代码，但未接入默认查询路径。',
+    features: ['支持 CREATE TABLE、INSERT、SELECT（投影与条件）、多表查询、UPDATE / DELETE、视图与索引元数据，以及显式 commit / rollback。', '块级 S/X 锁、undo 日志与 WAL 刷盘顺序、缓冲池与 LRU 替换接口，页面为 4096 字节、默认 8 个页框。', '25 个 CMocka 测试套件（CTest）与 demo SQL 演示脚本；v1.0 归档时在全新 clone 中复现构建与测试。'],
+    journey: [{ title: '建立存储基础', text: '围绕块、页、文件、缓冲区和日志组织底层模块。' }, { title: '连接 SQL 执行链', text: '将解析、查询计划、扫描执行和元数据串联为可演示流程。' }, { title: '归档与复盘', text: '整理 13 章教程、可复现构建与 12 篇开发系列；后续研究在 AI-NATIVE-DBMS-C 中展开。' }],
     image: '/images/projects/dbms-architecture.png', imageAlt: 'DBMS_C 原项目文档中的系统总体分层结构图',
-    source: '根据 DBMS_C README、模块调用关系图与原项目插图整理。GitHub 链接来自本地 Git 远端 PhoenixDB。本页未重新运行数据库测试。',
+    source: '根据 DBMS_C 仓库的 README、RELEASE_NOTES 与模块调用关系整理，远端仓库为 yaohuayuan/DBMS_C。本页未重新运行数据库测试。',
   },
   {
     slug: 'aster', name: 'Aster', kind: '03 / OPEN EXPLORATION', status: '筹备中',

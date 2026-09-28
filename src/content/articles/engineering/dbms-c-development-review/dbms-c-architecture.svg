@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1060" role="img" aria-labelledby="title desc">
+  <title id="title">DBMS_C 分层架构</title>
+  <desc id="desc">从 SQL 命令行经过解析、计划、扫描、记录与事务层，到日志、缓冲池和文件页存储的调用关系。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#49677a"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#16242c" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .title { font: 700 34px system-ui, "Microsoft YaHei", sans-serif; fill: #17252e; }
+      .subtitle { font: 400 17px system-ui, "Microsoft YaHei", sans-serif; fill: #607482; }
+      .layer { fill: #f8fafb; stroke: #9eb1bd; stroke-width: 2; rx: 16; filter: url(#shadow); }
+      .accent { fill: #edf4f7; stroke: #557b91; }
+      .storage { fill: #f2f5ee; stroke: #73856b; }
+      .name { font: 700 23px ui-monospace, "Cascadia Code", monospace; fill: #20343f; }
+      .detail { font: 400 17px system-ui, "Microsoft YaHei", sans-serif; fill: #526875; }
+      .edge { fill: none; stroke: #49677a; stroke-width: 3; marker-end: url(#arrow); }
+      .edge-dash { fill: none; stroke: #78909c; stroke-width: 2.5; stroke-dasharray: 9 7; marker-end: url(#arrow); }
+      .label { font: 600 15px system-ui, "Microsoft YaHei", sans-serif; fill: #607482; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="1060" fill="#ffffff" rx="20"/>
+  <text x="600" y="56" text-anchor="middle" class="title">DBMS_C：一条 SQL 的分层执行路径</text>
+  <text x="600" y="88" text-anchor="middle" class="subtitle">实线表示主查询路径，虚线表示元数据或日志协作关系</text>
+
+  <g>
+    <rect x="300" y="125" width="600" height="82" class="layer accent"/>
+    <text x="600" y="160" text-anchor="middle" class="name">main.c / SQL CLI</text>
+    <text x="600" y="187" text-anchor="middle" class="detail">命令输入 · COMMIT / ROLLBACK · 结果输出</text>
+  </g>
+
+  <path d="M600 207 V245" class="edge"/>
+
+  <g>
+    <rect x="300" y="245" width="600" height="82" class="layer"/>
+    <text x="600" y="280" text-anchor="middle" class="name">parse/</text>
+    <text x="600" y="307" text-anchor="middle" class="detail">Lexer · Parser · QueryData · CommandData</text>
+  </g>
+
+  <path d="M600 327 V365" class="edge"/>
+
+  <g>
+    <rect x="300" y="365" width="600" height="82" class="layer"/>
+    <text x="600" y="400" text-anchor="middle" class="name">plan/</text>
+    <text x="600" y="427" text-anchor="middle" class="detail">TablePlan → ProductPlan → SelectPlan → ProjectPlan</text>
+  </g>
+
+  <path d="M600 447 V485" class="edge"/>
+
+  <g>
+    <rect x="300" y="485" width="600" height="82" class="layer"/>
+    <text x="600" y="520" text-anchor="middle" class="name">query/</text>
+    <text x="600" y="547" text-anchor="middle" class="detail">统一 Scan 接口 · Project / Select / Product / Table Scan</text>
+  </g>
+
+  <path d="M600 567 V605" class="edge"/>
+
+  <g>
+    <rect x="300" y="605" width="600" height="82" class="layer accent"/>
+    <text x="600" y="640" text-anchor="middle" class="name">record/</text>
+    <text x="600" y="667" text-anchor="middle" class="detail">Schema · Layout · RecordPage · RID · 跨块扫描</text>
+  </g>
+
+  <g>
+    <rect x="35" y="603" width="220" height="88" class="layer"/>
+    <text x="145" y="639" text-anchor="middle" class="name">metadata/</text>
+    <text x="145" y="666" text-anchor="middle" class="detail">系统目录表</text>
+  </g>
+  <path d="M255 647 H300" class="edge-dash"/>
+  <text x="272" y="632" text-anchor="middle" class="label">Schema</text>
+
+  <path d="M600 687 V725" class="edge"/>
+
+  <g>
+    <rect x="300" y="725" width="600" height="82" class="layer accent"/>
+    <text x="600" y="760" text-anchor="middle" class="name">tx/</text>
+    <text x="600" y="787" text-anchor="middle" class="detail">Transaction · 块级 S/X 锁 · Undo Recovery</text>
+  </g>
+
+  <g>
+    <rect x="945" y="722" width="220" height="88" class="layer"/>
+    <text x="1055" y="758" text-anchor="middle" class="name">Log/</text>
+    <text x="1055" y="785" text-anchor="middle" class="detail">LSN · 逆序迭代</text>
+  </g>
+  <path d="M900 766 H945" class="edge-dash"/>
+  <text x="922" y="751" text-anchor="middle" class="label">WAL</text>
+
+  <path d="M600 807 V845" class="edge"/>
+
+  <g>
+    <rect x="300" y="845" width="600" height="82" class="layer storage"/>
+    <text x="600" y="880" text-anchor="middle" class="name">buffer/</text>
+    <text x="600" y="907" text-anchor="middle" class="detail">页框 · pin / unpin · 脏页 · ReplacementPolicy</text>
+  </g>
+
+  <path d="M600 927 V965" class="edge"/>
+
+  <g>
+    <rect x="300" y="965" width="600" height="72" class="layer storage"/>
+    <text x="600" y="996" text-anchor="middle" class="name">File/</text>
+    <text x="600" y="1022" text-anchor="middle" class="detail">BlockID · Page · FileManager · 4096-byte blocks</text>
+  </g>
+</svg>

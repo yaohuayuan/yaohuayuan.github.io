@@ -29,6 +29,7 @@ export const tagLabels = {
 export const seriesLabels = {
 	'site-testing': '站点功能测试',
 	'cumcm-2024': 'CUMCM 2024',
+	'dbms-c-from-zero': '从零实现 DBMS_C',
 } as const satisfies Readonly<Record<string, string>>;
 
 export type CategorySlug = keyof typeof categoryLabels;

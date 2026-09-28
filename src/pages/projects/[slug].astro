@@ -1,9 +1,17 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { projects } from '../../data/projects';
+import { getSeriesLabel } from '../../data/taxonomy';
 import '../../styles/page.css';
 export function getStaticPaths() { return projects.map(project => ({ params: { slug: project.slug }, props: { project } })); }
 const { project } = Astro.props;
+const seriesArticles = project.series
+  ? (await getCollection('articles'))
+      .filter(entry => !entry.data.draft && entry.data.series === project.series)
+      .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf() || a.data.title.localeCompare(b.data.title, 'zh-CN'))
+  : [];
+const seriesLabel = project.series ? getSeriesLabel(project.series) : '';
 ---
 <BaseLayout title={project.name} description={project.description}>
 <div class="content-page project-detail">
@@ -12,8 +20,15 @@ const { project } = Astro.props;
   <section><h2>01 / 项目背景</h2><p>{project.background}</p></section>
   <section><h2>02 / 技术架构</h2><p>{project.architectureNote}</p>{project.architecture.length > 0 && <ol class="architecture">{project.architecture.map((layer,index)=><li><span>{String(index+1).padStart(2,'0')}</span><strong>{layer}</strong></li>)}</ol>}</section>
   <section><h2>03 / 核心功能与边界</h2><ul>{project.features.map(feature=><li>{feature}</li>)}</ul></section>
-  <section><h2>04 / 开发过程</h2><ol class="journey">{project.journey.map(step=><li><h3>{step.title}</h3><p>{step.text}</p></li>)}</ol></section>
-  <section><h2>05 / 项目图像</h2>{project.image ? <figure><a href={project.image}><img src={project.image} alt={project.imageAlt} loading="lazy" width="869" height="530"/></a><figcaption>{project.imageAlt} · 点击查看原图</figcaption></figure> : <div class="image-pending"><span aria-hidden="true">⊞</span><p>{project.slug === 'aster' ? '项目尚在筹备，暂无截图。' : '当前暂无已整理的运行截图。上方分层图展示研究目标，后续补充实际运行记录。'}</p></div>}</section>
+  {project.series && <section class="series-section">
+    <h2>04 / {seriesLabel}</h2>
+    <p>{project.seriesNote ?? `本项目配有 ${seriesArticles.length} 篇连续阅读的系列文章。`}</p>
+    <ol class="series-list" aria-label={`${seriesLabel}文章列表`}>{seriesArticles.map((entry,index)=><li><a href={`/articles/${entry.id}/`}><span class="series-index" aria-hidden="true">{String(index+1).padStart(2,'0')}</span><span class="series-title">{entry.data.title}</span><time datetime={entry.data.date.toISOString().slice(0,10)}>{entry.data.date.toISOString().slice(0,10)}</time></a></li>)}</ol>
+    <div class="project-links"><a class="button" href={`/series/${project.series}/`}>进入系列页 <span aria-hidden="true">↗</span></a><a class="text-link" href={`/articles/engineering/${project.slug}-series/`}>系列导读 <span aria-hidden="true">→</span></a>{project.github && <a class="text-link" href={project.github}>GitHub Repository <span aria-hidden="true">↗</span></a>}</div>
+    <p class="series-note">{seriesArticles.length} 篇内容 · 1 篇导读 + {seriesArticles.length - 1} 篇正文</p>
+  </section>}
+  <section><h2>{project.series ? '05' : '04'} / 开发过程</h2><ol class="journey">{project.journey.map(step=><li><h3>{step.title}</h3><p>{step.text}</p></li>)}</ol></section>
+  <section><h2>{project.series ? '06' : '05'} / 项目图像</h2>{project.image ? <figure><a href={project.image}><img src={project.image} alt={project.imageAlt} loading="lazy" width="869" height="530"/></a><figcaption>{project.imageAlt} · 点击查看原图</figcaption></figure> : <div class="image-pending"><span aria-hidden="true">⊞</span><p>{project.slug === 'aster' ? '项目尚在筹备，暂无截图。' : '当前暂无已整理的运行截图。上方分层图展示研究目标，后续补充实际运行记录。'}</p></div>}</section>
   <aside class="source-note">{project.source}</aside>
   <a class="text-link" href="/labs/">在实验室观察算法与缓冲池机制 →</a>
 </div>
@@ -24,5 +39,14 @@ section{margin-top:3rem;}section h2{font-size:1.25rem;padding-bottom:.8rem;borde
 .architecture{padding:0;list-style:none;display:grid;gap:.6rem;}.architecture li{display:flex;align-items:center;gap:1.2rem;padding:1rem;background:var(--color-surface-soft);border:1px solid var(--color-border);border-radius:4px;font:.8rem/1.8 var(--font-mono);overflow-wrap:anywhere;}.architecture li+li{margin-top:0;}.architecture span{color:var(--color-accent);}
 .journey{padding-left:1.3rem;}.journey h3{font-size:1rem;margin-bottom:.3rem;}.journey p{margin-top:0;}figure{margin:1rem 0;}figure img{width:100%;height:auto;max-height:720px;object-fit:contain;background:white;border:1px solid var(--color-border);padding:1rem;}figcaption{font-size:.75rem;text-align:center;color:var(--color-muted);}
 .image-pending{display:flex;align-items:center;gap:1.5rem;padding:1.5rem;border:1px dashed var(--color-border-strong);}.image-pending>span{font-size:2rem;color:var(--color-muted);}.image-pending p{font-size:.85rem;margin:0;}
+.series-list{padding:0;list-style:none;}
+.series-list a{display:flex;align-items:baseline;gap:1rem;padding:.85rem 1rem;border:1px solid var(--color-border);border-radius:4px;background:var(--color-surface);text-decoration:none;}
+.series-list a:hover{border-color:var(--color-accent);}
+.series-index{flex:none;color:var(--color-accent);font:.72rem var(--font-mono);}
+.series-title{flex:1;min-width:0;font-size:.95rem;line-height:1.7;}
+.series-list time{flex:none;color:var(--color-muted);font:.68rem var(--font-mono);}
+.project-links{display:flex;flex-wrap:wrap;align-items:center;gap:1.2rem;margin-top:1.6rem;}
+.series-note{margin-top:1rem;color:var(--color-muted);font:.72rem var(--font-mono);}
+@media(max-width:560px){.series-list a{flex-wrap:wrap;gap:.4rem 1rem;}.series-title{flex:1 1 100%;order:3;}.series-list time{margin-left:auto;}}
 .source-note{margin:3rem 0 1.5rem;padding:1rem;border-left:2px solid var(--color-accent);background:var(--color-surface-soft);font-size:.8rem;color:var(--color-muted);}
 </style>

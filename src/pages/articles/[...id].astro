@@ -16,6 +16,17 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+
+// 系列内连续阅读：按发布日期顺序取当前文章的前后相邻篇（不改变文章路由与 frontmatter 字段）。
+const series = entry.data.series;
+const seriesArticles = series
+	? (await getCollection('articles'))
+			.filter((item) => !item.data.draft && item.data.series === series)
+			.sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf() || a.data.title.localeCompare(b.data.title, 'zh-CN'))
+	: [];
+const position = seriesArticles.findIndex((item) => item.id === entry.id);
+const previous = position > 0 ? seriesArticles[position - 1] : undefined;
+const next = position >= 0 && position < seriesArticles.length - 1 ? seriesArticles[position + 1] : undefined;
 ---
 
 <ArticleLayout
@@ -25,6 +36,8 @@ const { Content, headings } = await render(entry);
 	categories={entry.data.categories}
 	tags={entry.data.tags}
 	series={entry.data.series}
+	previous={previous}
+	next={next}
 	updated={entry.data.updated}
 	headings={headings}
 >
