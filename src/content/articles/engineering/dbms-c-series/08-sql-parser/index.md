@@ -10,6 +10,7 @@ tags:
   - SQL
   - parser
 series: dbms-c-from-zero
+seriesOrder: 8
 draft: false
 ---
 

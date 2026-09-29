@@ -10,6 +10,7 @@ tags:
   - transaction
   - concurrency-control
 series: dbms-c-from-zero
+seriesOrder: 5
 draft: false
 ---
 

@@ -10,6 +10,7 @@ tags:
   - database-kernel
   - systems-programming
 series: dbms-c-from-zero
+seriesOrder: 0
 draft: false
 ---
 

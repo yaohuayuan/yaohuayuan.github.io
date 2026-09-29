@@ -4,9 +4,10 @@ import type { CollectionEntry } from 'astro:content';
 interface Props {
 	articles: CollectionEntry<'articles'>[];
 	ariaLabel?: string;
+	showSeriesOrder?: boolean;
 }
 
-const { articles, ariaLabel = '文章列表' } = Astro.props;
+const { articles, ariaLabel = '文章列表', showSeriesOrder = false } = Astro.props;
 const formatDate = (date: Date) => date.toISOString().slice(0, 10);
 ---
 
@@ -14,10 +15,11 @@ const formatDate = (date: Date) => date.toISOString().slice(0, 10);
 	{articles.map((entry) => (
 		<li class="article-list__item">
 			<div class="article-list__heading">
-				<a href={`/articles/${entry.id}/`}>{entry.data.title}</a>
+				<a href={`/articles/${entry.id}/`}>{showSeriesOrder && entry.data.seriesOrder !== undefined && <span class="chapter-number">{entry.data.seriesOrder === 0 ? '导读' : String(entry.data.seriesOrder).padStart(2, '0')} / </span>}{entry.data.title}</a>
 				<time datetime={formatDate(entry.data.date)}>{formatDate(entry.data.date)}</time>
 			</div>
 			<p>{entry.data.description}</p>
 		</li>
 	))}
 </ul>
+<style>.chapter-number { color:var(--color-accent); font:.75rem var(--font-mono); white-space:nowrap; }</style>

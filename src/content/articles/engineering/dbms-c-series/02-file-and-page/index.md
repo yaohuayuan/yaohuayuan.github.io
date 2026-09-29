@@ -10,6 +10,7 @@ tags:
   - storage-engine
   - page-storage
 series: dbms-c-from-zero
+seriesOrder: 2
 draft: false
 ---
 

@@ -10,6 +10,7 @@ tags:
   - buffer-pool
   - storage-engine
 series: dbms-c-from-zero
+seriesOrder: 3
 draft: false
 ---
 

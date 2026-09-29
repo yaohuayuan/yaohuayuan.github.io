@@ -7,7 +7,7 @@
 Node.js >= 22.12（本轮在 Node 24 验证）。
 
 ```powershell
-cd D:\Sites\yaohuayuan\blog-source
+cd D:\blog
 npm ci
 npm run dev
 ```
@@ -26,12 +26,12 @@ npm run preview -- --host 127.0.0.1
 - **Articles**：`src/content/articles/**/index.md`，时间流文章。保留原有分类、标签、系列、RSS 与归档。
 - **Knowledge**：`src/content/knowledge/**/index.md`，长期知识。学习路径与领域映射在 `src/data/knowledge.ts`。
 - **Projects**：`src/data/projects.ts` 集中维护介绍、背景、架构、功能、过程、插图与 GitHub。详情页自动生成。
-- **Labs**：`src/components/Experiment.astro` 提供统一步骤播放器；纯算法在 `src/lib/experiments.ts`；`GrowthModel.astro` 提供参数曲线。
+- **Series**：`src/data/series.ts` 统一配置专题，文章通过 `series` / `seriesOrder` 自动归入系列；维护方式见 [Series 指南](docs/SERIES.md)。
 - **主题**：`src/styles/global.css` 定义浅色与暗色语义变量。首次访问跟随系统，手动选择保存在本机。
 - **阅读**：文章与知识布局共享目录、阅读进度、代码复制与图片放大；数学公式仍由构建期 MathJax 渲染。
 - **SEO**：`BaseLayout.astro` 管理 canonical、Open Graph、Twitter、JSON-LD。分享图位于 `public/social-card.png`，SVG 源文件同目录。
 
-现有文章、图片及 frontmatter 未改动。板凳龙文章仍为 `draft: true`，开发环境可查看，生产站点、RSS 与搜索不发布它。当前可发布内容仍包含原有站点测试文章，未虚构新文章。
+现有文章与图片保留；仅为明确的专题补充系列 metadata。板凳龙文章仍为 `draft: true`，开发环境可查看，生产站点、RSS 与搜索不发布它。当前可发布内容仍包含原有站点测试文章，未虚构新文章。
 
 新增知识笔记需要使用现有 `section`：`data-structure`、`architecture`、`operating-system`、`network`、`systems`、`dbms`、`ai-llm`，或新增的领域分组 `algorithms`、`modeling`、`engineering`。
 
@@ -39,6 +39,7 @@ npm run preview -- --host 127.0.0.1
 
 ```powershell
 npm test
+npm run check
 npm run build
 node scripts/verify-build.mjs
 ```
@@ -49,7 +50,7 @@ node scripts/verify-build.mjs
 node scripts/qa-browser.mjs
 ```
 
-可设置 `QA_URL` 与 `QA_OUTPUT`。验证覆盖 360 / 768 / 1440 像素布局、SEO、损坏图片、主题持久化、实验步骤、数学公式、复制、大图与搜索。手机检查为浏览器视口模拟，未替代实体手机测试。
+可设置 `QA_URL` 与 `QA_OUTPUT`。验证覆盖 360 / 768 / 1440 像素布局、SEO、损坏图片、主题持久化、系列目录与前后篇导航、数学公式、复制、大图与搜索。手机检查为浏览器视口模拟，未替代实体手机测试。
 
 ## 部署
 

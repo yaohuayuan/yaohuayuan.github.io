@@ -11,6 +11,7 @@ tags:
   - recovery
   - write-ahead-log
 series: dbms-c-from-zero
+seriesOrder: 6
 draft: false
 ---
 

@@ -9,6 +9,8 @@ tags:
   - C
   - database-kernel
   - transaction
+series: dbms-c-from-zero
+seriesOrder: 13
 draft: false
 ---
 

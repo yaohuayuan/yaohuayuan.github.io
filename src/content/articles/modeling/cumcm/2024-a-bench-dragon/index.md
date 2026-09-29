@@ -8,7 +8,7 @@ tags:
   - cumcm
   - archimedean-spiral
   - collision-model
-series: cumcm-2024
+series: math-modeling
 draft: true
 ---
 

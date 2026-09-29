@@ -10,6 +10,7 @@ tags:
   - hash-index
   - query-optimizer
 series: dbms-c-from-zero
+seriesOrder: 11
 draft: false
 ---
 

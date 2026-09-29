@@ -10,6 +10,7 @@ tags:
   - concurrency-control
   - locking
 series: dbms-c-from-zero
+seriesOrder: 10
 draft: false
 ---
 

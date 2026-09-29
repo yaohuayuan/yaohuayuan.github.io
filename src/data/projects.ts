@@ -1,6 +1,8 @@
+import type { SeriesId } from './series';
+
 export interface Project {
   slug: string; name: string; kind: string; status: string; description: string; stack: string[];
-  github?: string; background: string; architecture: string[]; architectureNote: string; features: string[]; journey: { title: string; text: string }[]; image?: string; imageAlt?: string; series?: string; seriesNote?: string; source: string;
+  github?: string; background: string; architecture: string[]; architectureNote: string; features: string[]; journey: { title: string; text: string }[]; image?: string; imageAlt?: string; series?: SeriesId; seriesNote?: string; source: string;
 }
 export const projects: Project[] = [
   {
@@ -18,7 +20,7 @@ export const projects: Project[] = [
     slug: 'dbms-c', name: 'DBMS_C', kind: '02 / DATABASE KERNEL', status: 'v1.0 归档',
     description: '用 C 语言从零实现的教学型关系数据库原型：从 SQL 解析到页面存储打通一条可运行、可测试的主链路。',
     stack: ['C11', 'CMake', 'CMocka'], github: 'https://github.com/yaohuayuan/DBMS_C',
-    series: 'dbms-c-from-zero', seriesNote: '13 篇开发系列：1 篇系列导读 + 12 篇正文，按数据库内核的依赖顺序逐层展开。',
+    series: 'dbms-c-from-zero', seriesNote: '从系列导读到存储、事务与执行链，按数据库内核的依赖顺序逐层展开。',
     background: '本科毕业设计阶段的轻量化教学型数据库原型。它不做网络层、权限体系和工业级恢复，只把「一条 SQL 怎样变成某个页面上的几组字节」这条主链路完整走通，让每个数据库核心机制都能对应到一段可读、可运行的源码。',
     architecture: ['SQL CLI → parse → plan', 'query / record / metadata / hash index（元数据）', 'transaction → log / recovery', 'buffer · LRU → file / page'],
     architectureNote: '依据项目 README 和模块调用关系整理的概览；index、BetterQueryPlanner 与恢复入口已有代码，但未接入默认查询路径。',

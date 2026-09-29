@@ -11,6 +11,7 @@ tags:
   - reproducible-builds
   - project-retrospective
 series: dbms-c-from-zero
+seriesOrder: 12
 draft: false
 ---
 

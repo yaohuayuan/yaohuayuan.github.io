@@ -4,7 +4,8 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import ReadingTools from '../components/ReadingTools.astro';
-import { getCategoryLabel, getSeriesLabel, getTagLabel } from '../data/taxonomy';
+import { getCategoryLabel, getTagLabel } from '../data/taxonomy';
+import { getSeriesLabel, type SeriesId } from '../data/series';
 import '../styles/article.css';
 
 interface Props {
@@ -13,14 +14,16 @@ interface Props {
 	date: Date;
 	categories: string[];
 	tags: string[];
-	series?: string;
+	series?: SeriesId;
+	seriesArticles?: CollectionEntry<'articles'>[];
+	articleId?: string;
 	previous?: CollectionEntry<'articles'>;
 	next?: CollectionEntry<'articles'>;
 	updated?: Date;
 	headings: MarkdownHeading[];
 }
 
-const { title, description, date, categories, tags, series, previous, next, updated, headings } = Astro.props;
+const { title, description, date, categories, tags, series, seriesArticles = [], articleId, previous, next, updated, headings } = Astro.props;
 const formattedDate = date.toISOString().slice(0, 10);
 const formatDate = (entryDate: Date) => entryDate.toISOString().slice(0, 10);
 ---
@@ -75,6 +78,15 @@ const formatDate = (entryDate: Date) => entryDate.toISOString().slice(0, 10);
 				</div>
 			</div>
 
+			{series && (
+				<aside class="series-directory" data-pagefind-ignore>
+					<a class="text-link" href={`/series/${series}/`}>← {getSeriesLabel(series)} · 查看完整专题</a>
+					{seriesArticles.length > 0 && <details>
+						<summary>系列内文章目录 · {seriesArticles.length} 篇</summary>
+						<ol>{seriesArticles.map((item) => <li><a href={`/articles/${item.id}/`} aria-current={item.id === articleId ? 'page' : undefined}>{item.data.title}</a></li>)}</ol>
+					</details>}
+				</aside>
+			)}
 			{(previous || next) && (
 				<nav class="series-nav" aria-label={`${series ? getSeriesLabel(series) : ''}系列导航`}>
 					{previous ? (
@@ -98,6 +110,11 @@ const formatDate = (entryDate: Date) => entryDate.toISOString().slice(0, 10);
 </BaseLayout>
 
 <style>
+	.series-directory { margin-top:3rem; padding:1.2rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface-soft); }
+	.series-directory details { margin-top:.8rem; font-size:.85rem; }
+	.series-directory summary { cursor:pointer; color:var(--color-text-secondary); }
+	.series-directory li { padding-block:.3rem; overflow-wrap:anywhere; }
+	.series-directory a[aria-current="page"] { font-weight:650; color:var(--color-text); }
 	.article-taxonomy {
 		display: grid;
 		margin-top: 1rem;

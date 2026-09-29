@@ -1,37 +1,28 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import TaxonomyOverview from '../../components/TaxonomyOverview.astro';
-import { getSeriesLabel } from '../../data/taxonomy';
+import SeriesCard from '../../components/SeriesCard.astro';
+import { getSeriesSummaries } from '../../lib/series';
 import '../../styles/page.css';
 
-const articles = (await getCollection('articles'))
-	.filter((entry) => !entry.data.draft && entry.data.series);
-
-const seriesCounts = new Map<string, number>();
-
-for (const article of articles) {
-	const series = article.data.series;
-	if (series) {
-		seriesCounts.set(series, (seriesCounts.get(series) ?? 0) + 1);
-	}
-}
-
-const seriesItems = Array.from(seriesCounts, ([slug, count]) => ({
-	slug,
-	label: getSeriesLabel(slug),
-	count,
-	href: `/series/${slug}/`,
-})).sort((a, b) => a.label.localeCompare(b.label, 'zh-CN'));
+const series = getSeriesSummaries(await getCollection('articles'));
 ---
 
-<BaseLayout title="系列" description="按连续专题阅读技术文章。">
+<BaseLayout title="系列文章" description="按长期专题阅读数学建模、算法竞赛、数据库开发与计算机科学学习记录。">
 	<div class="content-page">
 		<header class="page-header">
-			<h1>系列</h1>
-			<p class="page-intro">按连续专题阅读技术文章。</p>
+			<p class="section-label">SERIES / CONNECT THE IDEAS</p>
+			<h1>沿着一个问题，持续探索。</h1>
+			<p class="page-intro">把分散的文章连成专题。从一场比赛到一个系统，沿着同一条线索慢慢深入。</p>
 		</header>
 
-		<TaxonomyOverview items={seriesItems} ariaLabel="系列列表" />
+		<div class="series-grid" aria-label="系列专题">{series.map((item) => <SeriesCard series={item} />)}</div>
+		<p class="series-footnote">每个专题持续积累；文章数量与更新时间来自已发布内容。</p>
 	</div>
 </BaseLayout>
+<style>
+	.series-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.3rem; }
+	.series-footnote { margin-top:2rem; color:var(--color-muted); font-size:.85rem; }
+	@media(max-width:1000px) { .series-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+	@media(max-width:640px) { .series-grid { grid-template-columns:1fr; } }
+</style>

@@ -9,7 +9,8 @@
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
-    "test": "node --experimental-strip-types --test --test-isolation=none tests/experiments.test.ts",
+    "test": "node --experimental-strip-types --test --test-isolation=none tests/experiments.test.ts tests/series.test.ts",
+    "check": "astro check",
     "astro": "astro"
   },
   "dependencies": {
@@ -24,6 +25,8 @@
     "esbuild@0.28.1": true
   },
   "devDependencies": {
-    "pagefind": "^1.5.2"
+    "@astrojs/check": "^0.9.10",
+    "pagefind": "^1.5.2",
+    "typescript": "^6.0.3"
   }
 }

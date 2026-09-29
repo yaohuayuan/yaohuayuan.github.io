@@ -1,0 +1,25 @@
+---
+import type { SeriesSummary } from '../lib/series';
+interface Props { series: SeriesSummary }
+const { series } = Astro.props;
+const updated = series.updated?.toISOString().slice(0, 10);
+---
+<a class="series-card" href={`/series/${series.id}/`}>
+	<div class="series-card__top"><span>SERIES / {String(series.order).padStart(2, '0')}</span><span>{series.count} 篇文章</span></div>
+	<div class="series-card__mark" aria-hidden="true">✳<span>↳</span></div>
+	<h2>{series.title}</h2>
+	<p>{series.description}</p>
+	<div class="series-card__bottom"><span>{updated ? <>更新于 <time datetime={updated}>{updated}</time></> : '尚无已发布文章'}</span><span class="series-card__action">查看系列 <span aria-hidden="true">→</span></span></div>
+</a>
+<style>
+	.series-card { display:flex; flex-direction:column; min-width:0; padding:1.4rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-text); text-decoration:none; transition:transform .2s,border-color .2s; }
+	.series-card:hover { transform:translateY(-4px); border-color:var(--color-accent); }
+	.series-card__top { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem; font:.62rem var(--font-mono); color:var(--color-muted); }
+	.series-card__mark { display:flex; align-items:center; gap:.7rem; min-height:80px; color:var(--color-accent); font-size:2.2rem; }
+	.series-card__mark span { font:1.2rem var(--font-mono); }
+	h2 { margin:.1rem 0 .7rem; font-size:1.15rem; overflow-wrap:anywhere; }
+	p { margin:0 0 1.5rem; font-size:.85rem; line-height:1.85; color:var(--color-text-secondary); }
+	.series-card__bottom { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.7rem; margin-top:auto; padding-top:1rem; border-top:1px solid var(--color-border); font:.65rem var(--font-mono); color:var(--color-muted); }
+	time { font-size:inherit; }
+	.series-card__action { color:var(--color-accent); }
+</style>

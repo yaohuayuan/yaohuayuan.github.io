@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getSeriesArticles } from '../../lib/series';
 
 export async function getStaticPaths() {
 	const entries = await getCollection('articles');
@@ -17,12 +18,10 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 
-// 系列内连续阅读：按发布日期顺序取当前文章的前后相邻篇（不改变文章路由与 frontmatter 字段）。
+// 与系列目录共用排序；草稿不进入已发布文章的连续阅读导航。
 const series = entry.data.series;
 const seriesArticles = series
-	? (await getCollection('articles'))
-			.filter((item) => !item.data.draft && item.data.series === series)
-			.sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf() || a.data.title.localeCompare(b.data.title, 'zh-CN'))
+	? getSeriesArticles(await getCollection('articles'), series)
 	: [];
 const position = seriesArticles.findIndex((item) => item.id === entry.id);
 const previous = position > 0 ? seriesArticles[position - 1] : undefined;
@@ -36,6 +35,8 @@ const next = position >= 0 && position < seriesArticles.length - 1 ? seriesArtic
 	categories={entry.data.categories}
 	tags={entry.data.tags}
 	series={entry.data.series}
+	seriesArticles={seriesArticles}
+	articleId={entry.id}
 	previous={previous}
 	next={next}
 	updated={entry.data.updated}

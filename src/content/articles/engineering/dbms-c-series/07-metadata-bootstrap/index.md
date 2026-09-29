@@ -10,6 +10,7 @@ tags:
   - metadata
   - system-catalog
 series: dbms-c-from-zero
+seriesOrder: 7
 draft: false
 ---
 

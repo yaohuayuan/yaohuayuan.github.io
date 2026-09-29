@@ -10,6 +10,7 @@ tags:
   - query-execution
   - query-planner
 series: dbms-c-from-zero
+seriesOrder: 9
 draft: false
 ---
 

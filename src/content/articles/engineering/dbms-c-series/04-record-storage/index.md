@@ -10,6 +10,7 @@ tags:
   - record-storage
   - storage-engine
 series: dbms-c-from-zero
+seriesOrder: 4
 draft: false
 ---
 

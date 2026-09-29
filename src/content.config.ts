@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { seriesIds } from './data/series';
 
 const articles = defineCollection({
 	loader: glob({
@@ -14,8 +15,12 @@ const articles = defineCollection({
 		updated: z.coerce.date().optional(),
 		categories: z.array(z.string()).default([]),
 		tags: z.array(z.string()).default([]),
-		series: z.string().optional(),
+		series: z.enum(seriesIds).optional(),
+		seriesOrder: z.number().int().nonnegative().optional(),
 		draft: z.boolean().default(false),
+	}).refine((data) => data.seriesOrder === undefined || data.series !== undefined, {
+		message: 'seriesOrder 必须同时指定 series。',
+		path: ['seriesOrder'],
 	}),
 });
 

@@ -10,6 +10,7 @@ tags:
   - database-kernel
   - project-retrospective
 series: dbms-c-from-zero
+seriesOrder: 1
 draft: false
 ---
 

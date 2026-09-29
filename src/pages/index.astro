@@ -4,12 +4,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import OrbitMap from '../components/OrbitMap.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import SeriesCard from '../components/SeriesCard.astro';
 import KnowledgeMap from '../components/KnowledgeMap.astro';
 import { projects } from '../data/projects';
 import { getCategoryLabel } from '../data/taxonomy';
+import { getSeriesSummaries } from '../lib/series';
 import '../styles/home.css';
-const articles = (await getCollection('articles')).filter(e => !e.data.draft).sort((a,b) => b.data.date.valueOf() - a.data.date.valueOf());
+const entries = await getCollection('articles');
+const articles = entries.filter(e => !e.data.draft).sort((a,b) => b.data.date.valueOf() - a.data.date.valueOf());
 const recent = articles.slice(0,3);
+const featuredSeries = getSeriesSummaries(entries).filter(item => item.count > 0).slice(0,3);
 ---
 <BaseLayout title="曜花缘" description="曜花缘 / YaoHuaYuan 的个人技术档案馆。探索计算机系统、数据库与人工智能的边界，记录算法、数学建模与软件工程实践。">
 <div class="home-page">
@@ -30,10 +34,10 @@ const recent = articles.slice(0,3);
   </section>
   <section class="home-section writing-section" aria-labelledby="writing-title">
     <SectionHeading id="writing-title" index="02" label="RECENT WRITING" title="沿途的思考与记录" href="/articles/" link="全部文章"/>
-    <div class="writing-layout"><p class="writing-aside">把问题拆开，<br/>把思考留下。<span>算法 · 建模 · 开发日志</span><a href="/rss.xml">订阅 RSS ↗</a></p><ul class="writing-index">{recent.map((entry,index) => <li><a href={`/articles/${entry.id}/`}><div class="writing-meta"><time datetime={entry.data.date.toISOString()}>{entry.data.date.toISOString().slice(0,10)}</time><span>{entry.data.categories[0] ? getCategoryLabel(entry.data.categories[0]) : '技术文章'}</span></div><h3>{entry.data.title}<span aria-hidden="true">↗</span></h3><p>{entry.data.description}</p></a></li>)}</ul></div>
+    <div class="writing-layout"><p class="writing-aside">把问题拆开，<br/>把思考留下。<span>算法 · 建模 · 开发日志</span><a href="/rss.xml">订阅 RSS ↗</a></p><ul class="writing-index">{recent.map((entry) => <li><a href={`/articles/${entry.id}/`}><div class="writing-meta"><time datetime={entry.data.date.toISOString()}>{entry.data.date.toISOString().slice(0,10)}</time><span>{entry.data.categories[0] ? getCategoryLabel(entry.data.categories[0]) : '技术文章'}</span></div><h3>{entry.data.title}<span aria-hidden="true">↗</span></h3><p>{entry.data.description}</p></a></li>)}</ul></div>
   </section>
   <section class="home-section" aria-labelledby="knowledge-title"><SectionHeading id="knowledge-title" index="03" label="KNOWLEDGE CONSTELLATION" title="让知识，逐渐连成星图" href="/knowledge/" link="进入知识库"/><KnowledgeMap/></section>
-  <section class="labs-entry" aria-labelledby="labs-title"><div class="labs-illustration" aria-hidden="true"><span>[</span><i style="--bar:30%"></i><i style="--bar:50%"></i><i style="--bar:38%"></i><i style="--bar:78%"></i><i style="--bar:62%"></i><i style="--bar:94%"></i><span>]</span></div><div><p class="section-label">04 / THE LABORATORY</p><h2 id="labs-title">让抽象的原理，变得触手可及。</h2><p>从一次二分查找到一个缓冲池，在交互中观察系统如何工作。</p><a class="text-link" href="/labs/">进入实验室 <span aria-hidden="true">→</span></a></div><span class="lab-note">OBSERVE.<br/>QUESTION.<br/>BUILD.</span></section>
+  <section class="home-section" aria-labelledby="series-title"><SectionHeading id="series-title" index="04" label="ONGOING SERIES" title="沿着同一条线索，继续深入" href="/series/" link="所有系列"/><div class="home-series-grid">{featuredSeries.map(series => <SeriesCard series={series}/>)}</div></section>
   <div class="home-colophon"><span>✦ 从好奇出发，以工程作答。</span><span>THIS ARCHIVE IS ALWAYS A WORK IN PROGRESS.</span></div>
 </div>
 </BaseLayout>
